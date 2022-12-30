@@ -1,10 +1,34 @@
-import React from "react";
 import axios from "axios";
+
+const rootUrl = "/api/v1/schedule";
 
 export default class ScheduleRepository {
   async getMySchedules() {
-    const url = "/api/v1/schedule/getMySchedules";
-    let response = await axios.get(url);
+    let response = await axios.get(rootUrl + "/getMySchedules");
+    return response.data;
+  }
+
+  async getSchedule(scheduleId: number) {
+    let response = await axios.get(rootUrl + "/getSchedule/" + scheduleId);
+    return response.data;
+  }
+
+  async getReplies(scheduleId: number) {
+    let response = await axios.get(
+      "/api/v1/scheduleReply/getScheduleReplies/" + scheduleId
+    );
+    return response.data;
+  }
+
+  async storeSchedule(data: any) {
+    let response = await axios.post(rootUrl + "/storeSchedule", data);
+    return response.data;
+  }
+
+  async deleteSchedule(scheduleId: number) {
+    let response = await axios.delete(
+      rootUrl + "/deleteSchedule/" + scheduleId
+    );
     return response.data;
   }
 }

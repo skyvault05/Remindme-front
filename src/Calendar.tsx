@@ -6,6 +6,7 @@ import CardContent from "@mui/material/CardContent";
 import CardMedia from "@mui/material/CardMedia";
 import CssBaseline from "@mui/material/CssBaseline";
 import Drawer from "@mui/material/Drawer";
+import Modal from "@mui/material/Modal";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 
@@ -41,35 +42,64 @@ type slot = {
   title: string;
   user: [];
 };
+
 function CalendarApp() {
-  const onSelectEventHandler = (slotInfo: slot) => {
-    console.log(slotInfo);
-    alert(slotInfo.title + slotInfo.start)
+  const [myEventList, setMyEventList] = React.useState<any[]>([]);
+  const [open, setOpen] = React.useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  const scheduleRepository = new ScheduleRepository();
+
+  const style = {
+    position: "absolute" as "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: 400,
+    bgcolor: "background.paper",
+    border: "2px solid #000",
+    boxShadow: 24,
+    p: 4,
   };
 
-  const [myEventList, setMyEventList] = React.useState<any[]>([]);
+  const handleSelectSlot = React.useCallback(
+    ({ start, end }: any) => {
+      const title = window.prompt("New Event Name");
+      if (title) {
+        // console.log("myEventList", myEventList);
+        setMyEventList((prev) => [...prev, { start, end, title }]);
+        // console.log(start, end, title);
+        // console.log(moment(start), moment(end), title);
+
+        // window.alert(moment(start));
+        scheduleRepository.storeSchedule({
+          startDate: moment(start),
+          endDate: moment(end),
+          title,
+          intervalType: "ONCE",
+          intervalValue: 1,
+        });
+      }
+    },
+    [setMyEventList]
+  );
+
+  const handleSelectEvent = React.useCallback((event: slot) => {
+    // scheduleRepository.deleteSchedule(event.id);
+    console.log(event);
+    handleOpen();
+  }, []);
 
   React.useEffect(() => {
-    const scheduleRepository = new ScheduleRepository();
     scheduleRepository.getMySchedules().then((response) => {
+      console.log("response", response);
       scheduleMapper
         .toCalendarSchedule(response)
         .then((eventList) => setMyEventList(eventList));
     });
-    console.log("myEventList:", myEventList);
   }, []);
 
-  const renderEventContent = (slotInfo: any) => {
-    const date = moment(slotInfo.start).format("MMMM D, YYYY");
-    return (
-      <div>
-        <p>
-          Date: <strong>{date}</strong>
-        </p>
-        <p>Location: {slotInfo.location}</p>
-      </div>
-    );
-  };
   return (
     <div className="App">
       <Box sx={{ display: "flex" }}>
@@ -96,6 +126,22 @@ function CalendarApp() {
           }}
         >
           <Toolbar />
+          {/* <Button onClick={handleOpen}>Open modal</Button> */}
+          <Modal
+            open={open}
+            onClose={handleClose}
+            aria-labelledby="modal-modal-title"
+            aria-describedby="modal-modal-description"
+          >
+            <Box sx={style}>
+              <Typography id="modal-modal-title" variant="h6" component="h2">
+                Text in a modal
+              </Typography>
+              <Typography id="modal-modal-description" sx={{ mt: 2 }}>
+                Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
+              </Typography>
+            </Box>
+          </Modal>
           <Box sx={{ overflow: "auto" }}>
             {["All mail", "Trash", "Spam"].map((text, index) => (
               <Card sx={{ maxWidth: 345 }} key={index}>
@@ -133,9 +179,11 @@ function CalendarApp() {
             events={myEventList}
             startAccessor="start"
             endAccessor="end"
-            style={{ height: 500 }}
-            onSelectEvent={(slotInfo) => onSelectEventHandler(slotInfo)}
-            // onSelectSlot={(slotInfo) => onSelectSlotHandler(slotInfo)}
+            style={{ height: 1000 }}
+            onSelectEvent={handleSelectEvent}
+            onSelectSlot={handleSelectSlot}
+            showAllEvents={true}
+            selectable
           />
         </Box>
       </Box>

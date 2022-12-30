@@ -1,7 +1,5 @@
 import moment from "moment";
 import recur from "moment-recur";
-// require("moment-recur");
-// import { datetime, RRule, RRuleSet, rrulestr } from 'rrule'
 
 type temp = {
   [key: string]: any;
@@ -25,11 +23,12 @@ export default class SceduleMapper {
     switch (scheduleInfo.intervalType) {
       case "ONCE":
         if (scheduleInfo !== undefined)
-          this.scheduleDtoToEvent(scheduleInfo).then((startDate) =>
-            calendarSchedule.push(startDate)
-          );
+          this.scheduleDtoToEvent(scheduleInfo).then((startDate) => {
+            calendarSchedule.push(startDate);
+          });
         break;
 
+      // 매일 반복
       case "DAILY":
         recurrence = recur
           .recur(scheduleInfo.startDate, scheduleInfo.endDate)
@@ -120,11 +119,15 @@ export default class SceduleMapper {
 
   async scheduleDtoToEvent(schedule: { [x: string]: number }) {
     let convertedSchedule = JSON.parse(JSON.stringify(schedule));
+    // console.log("schedule", schedule);
     const startTime = new Date(schedule["startDate"]);
+    const endTime = new Date(schedule["endDate"]);
     Object.assign(convertedSchedule, { start: startTime });
-    Object.assign(convertedSchedule, {
-      end: new Date(startTime.getTime() + schedule["duration"] * 60000),
-    });
+    Object.assign(convertedSchedule, { end: endTime });
+    // Object.assign(convertedSchedule, {
+    //   end: new Date(startTime.getTime() + schedule["duration"] * 60000),
+    // });
+
     return convertedSchedule;
   }
 
