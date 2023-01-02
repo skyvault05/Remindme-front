@@ -1,11 +1,9 @@
-import { Button, CardActionArea, CardActions } from "@mui/material";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import CardMedia from "@mui/material/CardMedia";
+import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
 import Drawer from "@mui/material/Drawer";
+import FormControl from "@mui/material/FormControl";
 import MenuItem from "@mui/material/MenuItem";
 import Modal from "@mui/material/Modal";
 import TextField from "@mui/material/TextField";
@@ -13,6 +11,8 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 
 import moment from "moment";
+import "moment/locale/ko";
+
 import React from "react";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 
@@ -88,6 +88,9 @@ function CalendarApp() {
     p: 4,
   };
 
+  const [startDateValue, setStartDateValue] = React.useState("");
+  const [endDateValue, setEndDateValue] = React.useState("");
+
   const intervalTypeDropdown = [
     {
       value: "ONCE",
@@ -147,6 +150,21 @@ function CalendarApp() {
   //   scheduleRepository.deleteSchedule(id);
   // }, []);
 
+  const handleStartDateTodayClick = () => {
+    setStartDateValue(moment().format());
+  };
+
+  const handleSubmit = (e: any) => {
+    e.preventDefault();
+
+    const data = new FormData(e.currentTarget);
+    console.log(data);
+  };
+
+  const handleEndDateTodayClick = () => {
+    setEndDateValue(moment().format());
+  };
+
   React.useEffect(() => {
     scheduleRepository.getMySchedules().then((response) => {
       console.log("response", response);
@@ -194,70 +212,87 @@ function CalendarApp() {
             aria-labelledby="modal-modal-title"
             aria-describedby="modal-modal-description"
           >
-            <Box sx={style}>
-              <Typography id="modal-modal-title" variant="h6" component="h2">
-                추가
-              </Typography>
-              <div>
-                <TextField
-                  fullWidth
-                  required
-                  id="standard-title"
-                  label="제목"
-                  variant="standard"
-                />
-                <TextField
-                  fullWidth
-                  required
-                  id="standard-startDate"
-                  label="시작날짜"
-                  variant="standard"
-                />
-                <Button variant="outlined">Today</Button>
-                <TextField
-                  fullWidth
-                  required
-                  id="standard-endDate"
-                  label="종료날짜"
-                  variant="standard"
-                />
-                <Button variant="outlined">Today</Button>
-                <TextField
-                  fullWidth
-                  id="standard-select-currency"
-                  select
-                  label="반복 주기"
-                  variant="standard"
-                >
-                  {intervalTypeDropdown.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                      {option.label}
-                    </MenuItem>
-                  ))}
-                </TextField>
-                <TextField
-                  fullWidth
-                  id="standard-number"
-                  label="반복 횟수"
-                  type="number"
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                  variant="standard"
-                />
-
-                <TextField
-                  fullWidth
-                  id="standard-multiline-flexible"
-                  label="설명"
-                  multiline
-                  maxRows={20}
-                  variant="standard"
-                  defaultValue={description}
-                />
-                <Button variant="contained">추가</Button>
-                <Button variant="outlined">취소</Button>
-              </div>
+            <Box component="form" noValidate onSubmit={handleSubmit} sx={style}>
+              <FormControl component="fieldset" variant="standard">
+                <Typography id="modal-modal-title" variant="h6" component="h2">
+                  추가
+                </Typography>
+                <div>
+                  <TextField
+                    fullWidth
+                    autoFocus
+                    required
+                    id="standard-title"
+                    label="제목"
+                    variant="standard"
+                  />
+                  <TextField
+                    fullWidth
+                    required
+                    id="standard-startDate"
+                    label="시작날짜"
+                    variant="standard"
+                    value={startDateValue}
+                  />
+                  <Button
+                    variant="outlined"
+                    onClick={handleStartDateTodayClick}
+                  >
+                    Today
+                  </Button>
+                  <TextField
+                    fullWidth
+                    required
+                    id="standard-endDate"
+                    label="종료날짜"
+                    variant="standard"
+                    value={endDateValue}
+                  />
+                  <Button variant="outlined" onClick={handleEndDateTodayClick}>
+                    Today
+                  </Button>
+                  <TextField
+                    fullWidth
+                    id="standard-select-currency"
+                    select
+                    required
+                    label="반복 주기"
+                    variant="standard"
+                  >
+                    {intervalTypeDropdown.map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                  <TextField
+                    fullWidth
+                    id="standard-number"
+                    label="반복 횟수"
+                    type="number"
+                    required
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    variant="standard"
+                  />
+                  <TextField
+                    fullWidth
+                    id="standard-multiline-flexible"
+                    label="설명"
+                    multiline
+                    maxRows={20}
+                    variant="standard"
+                    defaultValue={description}
+                  />
+                  <Button type="submit" variant="contained">
+                    추가
+                  </Button>
+                  <Button type="reset" variant="outlined">
+                    취소
+                  </Button>
+                </div>
+              </FormControl>
             </Box>
           </Modal>
           <Modal
@@ -342,7 +377,7 @@ function CalendarApp() {
               </div>
             </Box>
           </Modal>
-          <Box sx={{ overflow: "auto" }}>
+          {/* <Box sx={{ overflow: "auto" }}>
             {["All mail", "Trash"].map((text, index) => (
               <Card sx={{ maxWidth: 345 }} key={index}>
                 <CardActionArea>
@@ -370,7 +405,7 @@ function CalendarApp() {
                 </CardActions>
               </Card>
             ))}
-          </Box>
+          </Box> */}
         </Drawer>
         <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
           <Toolbar />
