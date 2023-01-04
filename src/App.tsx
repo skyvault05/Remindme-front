@@ -1,14 +1,12 @@
-import moment from "moment";
-import { momentLocalizer } from "react-big-calendar";
-
 import "react-big-calendar/lib/css/react-big-calendar.css";
-import CalendarApp from "./Calendar";
-
-const localizer = momentLocalizer(moment);
-const drawerWidth = 345;
+import Dashboard from "./component/Dashboard";
 
 function App() {
-  return <CalendarApp />;
+  return (
+    <>
+      <Dashboard />
+    </>
+  );
 }
 
 export default App;

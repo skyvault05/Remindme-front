@@ -1,5 +1,5 @@
 import moment from "moment";
-import recur from "moment-recur";
+import "moment-recur-ts";
 
 type temp = {
   [key: string]: any;
@@ -30,7 +30,7 @@ export default class SceduleMapper {
 
       // 매일 반복
       case "DAILY":
-        recurrence = recur
+        recurrence = moment()
           .recur(scheduleInfo.startDate, scheduleInfo.endDate)
           .every(scheduleInfo.intervalValue)
           .days();
@@ -49,7 +49,7 @@ export default class SceduleMapper {
         break;
 
       case "WEEKLY":
-        recurrence = recur
+        recurrence = moment()
           .recur(scheduleInfo.startDate, scheduleInfo.endDate)
           .every(moment(scheduleInfo.startDate).day())
           .daysOfWeek();
@@ -70,7 +70,7 @@ export default class SceduleMapper {
         break;
 
       case "MONTHLY":
-        recurrence = recur
+        recurrence = moment()
           .recur(scheduleInfo.startDate, scheduleInfo.endDate)
           .every(moment(scheduleInfo.startDate).date())
           .daysOfMonth();
@@ -91,7 +91,7 @@ export default class SceduleMapper {
         break;
 
       case "ANNUAL":
-        recurrence = recur
+        recurrence = moment()
           .recur(scheduleInfo.startDate, scheduleInfo.endDate)
           .every(moment(scheduleInfo.startDate).date())
           .daysOfMonth()
