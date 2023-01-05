@@ -1,25 +1,25 @@
+import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Container from "@mui/material/Container";
 import CssBaseline from "@mui/material/CssBaseline";
 import Divider from "@mui/material/Divider";
+import MuiDrawer from "@mui/material/Drawer";
 import Grid from "@mui/material/Grid";
 import IconButton from "@mui/material/IconButton";
 import Link from "@mui/material/Link";
 import List from "@mui/material/List";
 import Modal from "@mui/material/Modal";
 import Paper from "@mui/material/Paper";
+import { createTheme, styled, ThemeProvider } from "@mui/material/styles";
 import TextField from "@mui/material/TextField";
+import Toolbar from "@mui/material/Toolbar";
+import Typography from "@mui/material/Typography";
 
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import LoginIcon from "@mui/icons-material/Login";
 import MenuIcon from "@mui/icons-material/Menu";
-import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
-import MuiDrawer from "@mui/material/Drawer";
 
-import { createTheme, styled, ThemeProvider } from "@mui/material/styles";
-import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
 import * as React from "react";
 import { mainListItems, secondaryListItems } from "./listItems";
 
@@ -28,6 +28,8 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 
 import moment from "moment";
 import "moment/locale/ko";
+
+import { FormControlLabel, FormLabel, Radio, RadioGroup } from "@mui/material";
 import ScheduleMapper from "../mapper/ScheduleMapper";
 import ScheduleRepository from "../repository/ScheduleRepository";
 
@@ -164,7 +166,6 @@ function DashboardContent() {
 
   //2023-01-23T00:00:00
   const handleSelectEvent = React.useCallback((event: any) => {
-    // scheduleRepository.deleteSchedule(event.id);
     console.log(event);
     setTitle(event.title);
     setStartDate(event.startDate);
@@ -189,7 +190,57 @@ function DashboardContent() {
   const handleDelete = (id: number) => {
     scheduleRepository
       .deleteSchedule(id)
-      .then(() => alert("삭제가 완료되었습니다."))
+      .then(() => {
+        alert("삭제가 완료되었습니다.");
+        handleEditClose();
+      })
+      .catch((error) => alert(error));
+  };
+
+  function intervalTypeCheck(data: FormData) {
+    let result;
+    if (data.get("radio_once") !== null) {
+      result = data.get("radio_once");
+    } else if (data.get("radio_daily") !== null) {
+      result = data.get("radio_daily");
+    } else if (data.get("radio_weekly") !== null) {
+      result = data.get("radio_weekly");
+    } else if (data.get("radio_monthly") !== null) {
+      result = data.get("radio_monthly");
+    } else if (data.get("radio_annual") !== null) {
+      result = data.get("radio_annual");
+    }
+
+    return result;
+  }
+
+  const handleAddSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+
+    console.log({
+      title: data.get("title"),
+      startDate: changeDate(data.get("startDate")),
+      endDate: changeDate(data.get("endDate")),
+      intervalType: intervalTypeCheck(data),
+      intervalValue: data.get("intervalValue"),
+      description: data.get("description"),
+    });
+
+    // console.log(moment(data.get("endDate")))
+    scheduleRepository
+      .storeSchedule({
+        title: data.get("title"),
+        startDate: changeDate(data.get("startDate")),
+        endDate: changeDate(data.get("endDate")),
+        intervalType: intervalTypeCheck(data),
+        intervalValue: data.get("intervalValue"),
+        description: data.get("description"),
+      })
+      .then(() => {
+        alert("추가가 완료되었습니다.");
+        handleAddClose();
+      })
       .catch((error) => alert(error));
   };
 
@@ -202,37 +253,14 @@ function DashboardContent() {
         title: data.get("title"),
         startDate: changeDate(data.get("startDate")),
         endDate: changeDate(data.get("endDate")),
-        intervalType: data.get("intervalType"),
+        intervalType: intervalTypeCheck(data),
         intervalValue: data.get("intervalValue"),
         description: data.get("description"),
       })
-      .then(() => alert("변경이 완료되었습니다."))
-      .catch((error) => alert(error));
-  };
-
-  const handleAddSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    console.log({
-      title: data.get("title"),
-      startDate: changeDate(data.get("startDate")),
-      endDate: changeDate(data.get("endDate")),
-      intervalType: data.get("intervalType"),
-      intervalValue: data.get("intervalValue"),
-      description: data.get("description"),
-    });
-
-    // console.log(moment(data.get("endDate")))
-    scheduleRepository
-      .storeSchedule({
-        title: data.get("title"),
-        startDate: changeDate(data.get("startDate")),
-        endDate: changeDate(data.get("endDate")),
-        intervalType: data.get("intervalType"),
-        intervalValue: data.get("intervalValue"),
-        description: data.get("description"),
+      .then(() => {
+        alert("변경이 완료되었습니다.");
+        handleEditClose();
       })
-      .then(() => alert("추가가 완료되었습니다."))
       .catch((error) => alert(error));
   };
 
@@ -413,15 +441,44 @@ function DashboardContent() {
                 shrink: true,
               }}
             />
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              id="intervalType"
-              label="intervalType"
-              name="intervalType"
-              autoComplete="intervalType"
-            />
+            <FormLabel id="radiobutton-label">IntervalType</FormLabel>
+            <RadioGroup
+              aria-labelledby="radiobutton-label"
+              defaultValue="ONCE"
+              name="radio-buttons-group"
+              row
+            >
+              <FormControlLabel
+                value="ONCE"
+                name="radio_once"
+                control={<Radio />}
+                label="한번"
+              />
+              <FormControlLabel
+                value="DAILY"
+                name="radio_daily"
+                control={<Radio />}
+                label="매일"
+              />
+              <FormControlLabel
+                value="WEEKLY"
+                name="radio_weekly"
+                control={<Radio />}
+                label="매주"
+              />
+              <FormControlLabel
+                value="MONTHLY"
+                name="radio_monthly"
+                control={<Radio />}
+                label="매달"
+              />
+              <FormControlLabel
+                value="ANNUAL"
+                name="radio_annual"
+                control={<Radio />}
+                label="매년"
+              />
+            </RadioGroup>
             <TextField
               margin="normal"
               required
@@ -439,6 +496,7 @@ function DashboardContent() {
               name="description"
               autoComplete="description"
             />
+
             {/* <TextField
               margin="normal"
               id="thumbnail"
@@ -514,16 +572,44 @@ function DashboardContent() {
               autoComplete="endDate"
               defaultValue={endDate}
             />
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              id="intervalType"
-              label="intervalType"
-              name="intervalType"
-              autoComplete="intervalType"
-              defaultValue={intervalType}
-            />
+            <FormLabel id="radiobutton-label">IntervalType</FormLabel>
+            <RadioGroup
+              aria-labelledby="radiobutton-label"
+              defaultValue="ONCE"
+              name="radio-buttons-group"
+              row
+            >
+              <FormControlLabel
+                value="ONCE"
+                name="radio_once"
+                control={<Radio />}
+                label="한번"
+              />
+              <FormControlLabel
+                value="DAILY"
+                name="radio_daily"
+                control={<Radio />}
+                label="매일"
+              />
+              <FormControlLabel
+                value="WEEKLY"
+                name="radio_weekly"
+                control={<Radio />}
+                label="매주"
+              />
+              <FormControlLabel
+                value="MONTHLY"
+                name="radio_monthly"
+                control={<Radio />}
+                label="매달"
+              />
+              <FormControlLabel
+                value="ANNUAL"
+                name="radio_annual"
+                control={<Radio />}
+                label="매년"
+              />
+            </RadioGroup>
             <TextField
               margin="normal"
               required
