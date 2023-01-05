@@ -390,8 +390,13 @@ function DashboardContent() {
               id="startDate"
               label="startDate"
               name="startDate"
+              type="datetime-local"
               autoComplete="startDate"
               defaultValue={start}
+              // sx={{ width: 250 }}
+              InputLabelProps={{
+                shrink: true,
+              }}
             />
             <TextField
               margin="normal"
@@ -400,8 +405,13 @@ function DashboardContent() {
               id="endDate"
               label="endDate"
               name="endDate"
+              type="datetime-local"
               autoComplete="endDate"
               defaultValue={end}
+              // sx={{ width: 250 }}
+              InputLabelProps={{
+                shrink: true,
+              }}
             />
             <TextField
               margin="normal"
@@ -429,9 +439,8 @@ function DashboardContent() {
               name="description"
               autoComplete="description"
             />
-            <TextField
+            {/* <TextField
               margin="normal"
-              fullWidth
               id="thumbnail"
               label="thumbnail"
               name="thumbnail"
@@ -441,7 +450,7 @@ function DashboardContent() {
             <Button variant="contained" component="label">
               Upload
               <input hidden accept="image/*" multiple type="file" />
-            </Button>
+            </Button> */}
             <Button type="submit" variant="contained" sx={{ mt: 3, mb: 2 }}>
               등록
             </Button>
@@ -490,6 +499,7 @@ function DashboardContent() {
               id="startDate"
               label="startDate"
               name="startDate"
+              type="datetime-local"
               autoComplete="startDate"
               defaultValue={startDate}
             />
@@ -500,6 +510,7 @@ function DashboardContent() {
               id="endDate"
               label="endDate"
               name="endDate"
+              type="datetime-local"
               autoComplete="endDate"
               defaultValue={endDate}
             />
@@ -532,9 +543,8 @@ function DashboardContent() {
               autoComplete="description"
               defaultValue={description}
             />
-            <TextField
+            {/* <TextField
               margin="normal"
-              fullWidth
               id="thumbnail"
               label="thumbnail"
               name="thumbnail"
@@ -544,7 +554,7 @@ function DashboardContent() {
             <Button variant="contained" component="label">
               Upload
               <input hidden accept="image/*" multiple type="file" />
-            </Button>
+            </Button> */}
             <Button type="submit" variant="contained" sx={{ mt: 3, mb: 2 }}>
               변경
             </Button>
