@@ -8,15 +8,13 @@ export default class ScheduleRepository {
     return response.data;
   }
 
-  async getSchedule(scheduleId: number) {
-    let response = await axios.get(rootUrl + "/getSchedule/" + scheduleId);
+  async getSchedules() {
+    let response = await axios.get(rootUrl + "/getSchedules");
     return response.data;
   }
 
-  async getReplies(scheduleId: number) {
-    let response = await axios.get(
-      "/api/v1/scheduleReply/getScheduleReplies/" + scheduleId
-    );
+  async getSchedule(scheduleId: number) {
+    let response = await axios.get(rootUrl + "/getSchedule/" + scheduleId);
     return response.data;
   }
 
@@ -29,6 +27,11 @@ export default class ScheduleRepository {
     let response = await axios.delete(
       rootUrl + "/deleteSchedule/" + scheduleId
     );
+    return response.data;
+  }
+
+  async uploadThumbnail(data: any) {
+    let response = await axios.post("/uploadThumbnail", data);
     return response.data;
   }
 }
