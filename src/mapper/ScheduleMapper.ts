@@ -43,7 +43,7 @@ export default class ScheduleMapper {
               .add(scheTime.hours, "h")
               .add(scheTime.minutes, "m")
               .add(scheTime.seconds, "s")
-              .toDate();
+              .format("YYYY-MM-DDTHH:mm")
           });
 
         this.pushEventsInList(calendarSchedule, startDateList, scheduleInfo);
@@ -62,10 +62,10 @@ export default class ScheduleMapper {
               .add(scheTime.hours, "h")
               .add(scheTime.minutes, "m")
               .add(scheTime.seconds, "s")
-              .toDate();
+              .format("YYYY-MM-DDTHH:mm")
           });
 
-        this.getFilterdList(startDateList, scheduleInfo).then((list) => {
+        this.getFilteredList(startDateList, scheduleInfo).then((list) => {
           this.pushEventsInList(calendarSchedule, list, scheduleInfo);
         });
         break;
@@ -83,10 +83,10 @@ export default class ScheduleMapper {
               .add(scheTime.hours, "h")
               .add(scheTime.minutes, "m")
               .add(scheTime.seconds, "s")
-              .toDate();
+              .format("YYYY-MM-DDTHH:mm")
           });
 
-        this.getFilterdList(startDateList, scheduleInfo).then((list) => {
+        this.getFilteredList(startDateList, scheduleInfo).then((list) => {
           this.pushEventsInList(calendarSchedule, list, scheduleInfo);
         });
         break;
@@ -106,10 +106,10 @@ export default class ScheduleMapper {
               .add(scheTime.hours, "h")
               .add(scheTime.minutes, "m")
               .add(scheTime.seconds, "s")
-              .toDate();
+              .format("YYYY-MM-DDTHH:mm")
           });
 
-        this.getFilterdList(startDateList, scheduleInfo).then((list) => {
+        this.getFilteredList(startDateList, scheduleInfo).then((list) => {
           this.pushEventsInList(calendarSchedule, list, scheduleInfo);
         });
         break;
@@ -146,7 +146,7 @@ export default class ScheduleMapper {
     };
   }
 
-  async getFilterdList(
+  async getFilteredList(
     startDateList: string | any[],
     scheduleInfo: { intervalValue: number }
   ) {
