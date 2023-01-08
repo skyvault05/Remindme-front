@@ -4,7 +4,8 @@ import "moment-recur-ts";
 type temp = {
   [key: string]: any;
 };
-export default class SceduleMapper {
+
+export default class ScheduleMapper {
   async toCalendarSchedule(scheduleList: any) {
     let calendarSchedule: any[] = [];
     for (const index in scheduleList) {
@@ -23,8 +24,8 @@ export default class SceduleMapper {
     switch (scheduleInfo.intervalType) {
       case "ONCE":
         if (scheduleInfo !== undefined)
-          this.scheduleDtoToEvent(scheduleInfo).then((startDate) => {
-            calendarSchedule.push(startDate);
+          this.scheduleDtoToEvent(scheduleInfo).then((event) => {
+            calendarSchedule.push(event);
           });
         break;
 
@@ -117,16 +118,22 @@ export default class SceduleMapper {
     }
   }
 
-  async scheduleDtoToEvent(schedule: { [x: string]: number }) {
+  async scheduleDtoToEvent(schedule: any) {
     let convertedSchedule = JSON.parse(JSON.stringify(schedule));
-    // console.log("schedule", schedule);
     const startTime = new Date(schedule["startDate"]);
     const endTime = new Date(schedule["endDate"]);
+    const intervalType = schedule["intervalType"];
+
     Object.assign(convertedSchedule, { start: startTime });
-    Object.assign(convertedSchedule, { end: endTime });
-    // Object.assign(convertedSchedule, {
-    //   end: new Date(startTime.getTime() + schedule["duration"] * 60000),
-    // });
+
+    // TODO: ONCE 일때랑 아닐때 IF 조건 걸기
+    if (intervalType === "ONCE") {
+      Object.assign(convertedSchedule, { end: endTime });
+    } else {
+      Object.assign(convertedSchedule, {
+        end: new Date(startTime.getTime() + schedule["duration"] * 600000),
+      });
+    }
 
     return convertedSchedule;
   }
@@ -149,6 +156,7 @@ export default class SceduleMapper {
     }
     return filterdStartDateList;
   }
+
   async pushEventsInList(
     calendarSchedule: any[],
     startDateList: any[],

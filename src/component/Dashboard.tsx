@@ -29,13 +29,23 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 import moment from "moment";
 import "moment/locale/ko";
 
-import { FormControlLabel, FormLabel, Radio, RadioGroup } from "@mui/material";
+import {
+  Card,
+  CardActionArea,
+  CardActions,
+  CardContent,
+  CardMedia,
+  FormControlLabel,
+  FormLabel,
+  Radio,
+  RadioGroup,
+} from "@mui/material";
 import ScheduleMapper from "../mapper/ScheduleMapper";
 import ScheduleRepository from "../repository/ScheduleRepository";
 
 const localizer = momentLocalizer(moment);
 
-function Copyright(props: any) {
+const Copyright = (props: any) => {
   return (
     <Typography
       variant="body2"
@@ -51,9 +61,9 @@ function Copyright(props: any) {
       {"."}
     </Typography>
   );
-}
+};
 
-const drawerWidth: number = 240;
+const drawerWidth: number = 300;
 
 const modalBoxStyle = {
   marginTop: 8,
@@ -153,25 +163,23 @@ function DashboardContent() {
   const scheduleMapper = new ScheduleMapper();
 
   React.useEffect(() => {
-    scheduleRepository.getMySchedules().then((response) => {
-      scheduleMapper
-        .toCalendarSchedule(response)
-        .then((eventList) => setMyEventList(eventList));
-    });
+    getEventLoading();
   }, []);
 
   const changeDate = (date: any) => {
-    return moment(date?.toString()).format("YYYY-MM-DDTHH:mm:ss");
+    const result = moment(date?.toString()).format("YYYY-MM-DDTHH:mm");
+
+    return result;
   };
 
   //2023-01-23T00:00:00
   const handleSelectEvent = React.useCallback((event: any) => {
-    console.log(event);
     setTitle(event.title);
     setStartDate(event.startDate);
     setEndDate(event.endDate);
     setIntervalType(event.intervalType);
     setIntervalValue(event.intervalValue);
+    setDuration(event.duration);
     setDescription(event.description);
     setId(event.id);
     handleEditOpen();
@@ -180,24 +188,21 @@ function DashboardContent() {
   const handleSelectSlot = React.useCallback(
     ({ start, end }: any) => {
       handleAddOpen();
-
       setStart(changeDate(start).toString());
       setEnd(changeDate(end).toString());
     },
     [setMyEventList]
   );
 
-  const handleDelete = (id: number) => {
-    scheduleRepository
-      .deleteSchedule(id)
-      .then(() => {
-        alert("삭제가 완료되었습니다.");
-        handleEditClose();
-      })
-      .catch((error) => alert(error));
+  const getEventLoading = () => {
+    scheduleRepository.getMySchedules().then((response) => {
+      scheduleMapper.toCalendarSchedule(response).then((eventList) => {
+        setMyEventList(eventList);
+      });
+    });
   };
 
-  function intervalTypeCheck(data: FormData) {
+  const intervalTypeCheck = (data: FormData) => {
     let result;
     if (data.get("radio_once") !== null) {
       result = data.get("radio_once");
@@ -212,6 +217,23 @@ function DashboardContent() {
     }
 
     return result;
+  };
+
+  const storeExecute = (response: any) => {
+    // let arr2 = [...myEventList, response];
+    // console.log("arr2", arr2);
+    // setMyEventList(arr2);
+    myEventList.push(response);
+    getEventLoading();
+  };
+
+  const deleteExecute = (id: any) => {
+    console.log("deleted id", id);
+    let arr2 = [...myEventList];
+    console.log("arr2", arr2);
+    const result = myEventList.filter((event) => event.id !== id);
+    console.log("delete result", result);
+    setMyEventList(result);
   }
 
   const handleAddSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -224,10 +246,10 @@ function DashboardContent() {
       endDate: changeDate(data.get("endDate")),
       intervalType: intervalTypeCheck(data),
       intervalValue: data.get("intervalValue"),
+      duration: data.get("duration"),
       description: data.get("description"),
     });
 
-    // console.log(moment(data.get("endDate")))
     scheduleRepository
       .storeSchedule({
         title: data.get("title"),
@@ -235,9 +257,12 @@ function DashboardContent() {
         endDate: changeDate(data.get("endDate")),
         intervalType: intervalTypeCheck(data),
         intervalValue: data.get("intervalValue"),
+        duration: data.get("duration"),
+
         description: data.get("description"),
       })
-      .then(() => {
+      .then((response) => {
+        storeExecute(response);
         alert("추가가 완료되었습니다.");
         handleAddClose();
       })
@@ -247,6 +272,7 @@ function DashboardContent() {
   const handleUpdateSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
+    console.log("id", data.get("id"));
     scheduleRepository
       .storeSchedule({
         id: data.get("id"),
@@ -255,10 +281,25 @@ function DashboardContent() {
         endDate: changeDate(data.get("endDate")),
         intervalType: intervalTypeCheck(data),
         intervalValue: data.get("intervalValue"),
+        duration: data.get("duration"),
         description: data.get("description"),
       })
-      .then(() => {
+      .then((response) => {
+        console.log("update_response", response);
+        storeExecute(response);
         alert("변경이 완료되었습니다.");
+        handleEditClose();
+      })
+      .catch((error) => alert(error));
+  };
+
+  const handleDeleteClick = (id: number) => {
+    scheduleRepository
+      .deleteSchedule(id)
+      .then((response) => {
+        console.log("delete_response", response);
+        deleteExecute(id);
+        alert("삭제가 완료되었습니다.");
         handleEditClose();
       })
       .catch((error) => alert(error));
@@ -355,7 +396,7 @@ function DashboardContent() {
                 </Paper>
               </Grid>
               {/* Chart */}
-              {/* <Grid item xs={12} md={8} lg={9}>
+              <Grid item xs={12} md={8} lg={9}>
                 <Paper
                   sx={{
                     p: 2,
@@ -363,11 +404,10 @@ function DashboardContent() {
                     flexDirection: "column",
                     height: 240,
                   }}
-                >
-                </Paper>
-              </Grid> */}
+                ></Paper>
+              </Grid>
               {/* Recent Deposits */}
-              {/* <Grid item xs={12} md={4} lg={3}>
+              <Grid item xs={12} md={4} lg={3}>
                 <Paper
                   sx={{
                     p: 2,
@@ -376,15 +416,44 @@ function DashboardContent() {
                     height: 240,
                   }}
                 >
-                  <Deposits />
+                  Deposits
                 </Paper>
-              </Grid> */}
-              {/* Recent Orders */}
-              {/* <Grid item xs={12}>
+              </Grid>
+              <Grid item xs={12}>
                 <Paper sx={{ p: 2, display: "flex", flexDirection: "column" }}>
-                  <Orders />
+                  <Typography gutterBottom variant="h5" component="div">
+                    Events
+                  </Typography>
+                  {myEventList.map((result: any, index) => (
+                    <Card sx={{ maxWidth: 345 }} key={index}>
+                      <CardActionArea>
+                        <CardMedia
+                          component="img"
+                          height="140"
+                          image={result.thumbnail}
+                        />
+                        <CardContent>
+                          <Typography gutterBottom variant="h5" component="div">
+                            {result.title}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {result.description}
+                          </Typography>
+                        </CardContent>
+                      </CardActionArea>
+                      <CardActions>
+                        <Button size="small" color="primary">
+                          10 PEOPLE
+                        </Button>
+                        <Button size="small" color="primary"></Button>
+                        <Button size="small" color="primary">
+                          {result.startDate} ~ {result.endDate} (D-20)
+                        </Button>
+                      </CardActions>
+                    </Card>
+                  ))}
                 </Paper>
-              </Grid> */}
+              </Grid>
             </Grid>
             <Copyright sx={{ pt: 4 }} />
           </Container>
@@ -490,6 +559,15 @@ function DashboardContent() {
             />
             <TextField
               margin="normal"
+              required
+              fullWidth
+              id="duration"
+              label="duration"
+              name="duration"
+              autoComplete="duration"
+            />
+            <TextField
+              margin="normal"
               fullWidth
               id="description"
               label="description"
@@ -537,8 +615,8 @@ function DashboardContent() {
               label="id"
               name="id"
               autoComplete="id"
+              value={id}
               defaultValue={id}
-              disabled
             />
             <TextField
               margin="normal"
@@ -622,6 +700,16 @@ function DashboardContent() {
             />
             <TextField
               margin="normal"
+              required
+              fullWidth
+              id="duration"
+              label="duration"
+              name="duration"
+              autoComplete="duration"
+              defaultValue={duration}
+            />
+            <TextField
+              margin="normal"
               fullWidth
               id="description"
               label="description"
@@ -647,7 +735,7 @@ function DashboardContent() {
             <Button
               variant="contained"
               color="error"
-              onClick={() => handleDelete(id)}
+              onClick={() => handleDeleteClick(id)}
               sx={{ mt: 3, mb: 2 }}
             >
               삭제
