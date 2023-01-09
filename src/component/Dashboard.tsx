@@ -29,17 +29,16 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 import moment from "moment";
 import "moment/locale/ko";
 
-import {
-  Card,
-  CardActionArea,
-  CardActions,
-  CardContent,
-  CardMedia,
-  FormControlLabel,
-  FormLabel,
-  Radio,
-  RadioGroup,
-} from "@mui/material";
+import Avatar from "@mui/material/Avatar";
+import Card from "@mui/material/Card";
+import CardActionArea from "@mui/material/CardActionArea";
+import CardActions from "@mui/material/CardActions";
+import CardContent from "@mui/material/CardContent";
+import CardMedia from "@mui/material/CardMedia";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import FormLabel from "@mui/material/FormLabel";
+import Radio from "@mui/material/Radio";
+import RadioGroup from "@mui/material/RadioGroup";
 import ScheduleMapper from "../mapper/ScheduleMapper";
 import ScheduleRepository from "../repository/ScheduleRepository";
 
@@ -129,6 +128,13 @@ const Drawer = styled(MuiDrawer, {
 
 const mdTheme = createTheme();
 
+type Member = {
+  id: number;
+  nickname: string;
+  picture: string;
+  status: number;
+};
+
 function DashboardContent() {
   const [open, setOpen] = React.useState(true);
   const toggleDrawer = () => {
@@ -151,13 +157,18 @@ function DashboardContent() {
   const [id, setId] = React.useState(0);
   const [intervalType, setIntervalType] = React.useState("");
   const [intervalValue, setIntervalValue] = React.useState(0);
-  const [members, setMembers] = React.useState([]);
+  const [members, setMembers] = React.useState<Member[]>([]);
   const [scheduleReplies, setScheduleReplies] = React.useState([]);
   const [start, setStart] = React.useState("");
   const [startDate, setStartDate] = React.useState("");
-  const [status, setStatus] = React.useState("");
   const [thumbnail, setThumbnail] = React.useState("");
-  const [user, setUser] = React.useState({});
+
+  const [user, setUser] = React.useState<Member>({
+    id: 0,
+    nickname: "",
+    picture: "",
+    status: 0,
+  });
 
   const scheduleRepository = new ScheduleRepository();
   const scheduleMapper = new ScheduleMapper();
@@ -174,6 +185,7 @@ function DashboardContent() {
 
   //2023-01-23T00:00:00
   const handleSelectEvent = React.useCallback((event: any) => {
+    // console.log("event", event);
     setTitle(event.title);
     setStartDate(event.startDate);
     setEndDate(event.endDate);
@@ -182,6 +194,8 @@ function DashboardContent() {
     setDuration(event.duration);
     setDescription(event.description);
     setId(event.id);
+    setMembers(event.members);
+    setUser(event.user);
     handleEditOpen();
   }, []);
 
@@ -220,21 +234,14 @@ function DashboardContent() {
   };
 
   const storeExecute = (response: any) => {
-    // let arr2 = [...myEventList, response];
-    // console.log("arr2", arr2);
-    // setMyEventList(arr2);
     myEventList.push(response);
     getEventLoading();
   };
 
   const deleteExecute = (id: any) => {
-    console.log("deleted id", id);
-    let arr2 = [...myEventList];
-    console.log("arr2", arr2);
     const result = myEventList.filter((event) => event.id !== id);
-    console.log("delete result", result);
     setMyEventList(result);
-  }
+  };
 
   const handleAddSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -378,7 +385,7 @@ function DashboardContent() {
         >
           <Toolbar />
           <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-            <Grid container spacing={3}>
+            <Grid container spacing={1.5}>
               <Grid item xs={12}>
                 <Paper sx={{ p: 2, display: "flex", flexDirection: "column" }}>
                   {/* <Orders /> */}
@@ -395,7 +402,6 @@ function DashboardContent() {
                   />
                 </Paper>
               </Grid>
-              {/* Chart */}
               <Grid item xs={12} md={8} lg={9}>
                 <Paper
                   sx={{
@@ -404,9 +410,10 @@ function DashboardContent() {
                     flexDirection: "column",
                     height: 240,
                   }}
-                ></Paper>
+                >
+                  Charts
+                </Paper>
               </Grid>
-              {/* Recent Deposits */}
               <Grid item xs={12} md={4} lg={3}>
                 <Paper
                   sx={{
@@ -574,19 +581,23 @@ function DashboardContent() {
               name="description"
               autoComplete="description"
             />
-
-            {/* <TextField
+            <TextField
               margin="normal"
-              id="thumbnail"
-              label="thumbnail"
-              name="thumbnail"
-              autoComplete="thumbnail"
-              defaultValue={thumbnail}
+              fullWidth
+              id="members"
+              label="members"
+              name="members"
+              autoComplete="members"
             />
-            <Button variant="contained" component="label">
-              Upload
-              <input hidden accept="image/*" multiple type="file" />
-            </Button> */}
+            <TextField
+              margin="normal"
+              fullWidth
+              id="scheduleReplies"
+              label="scheduleReplies"
+              name="scheduleReplies"
+              autoComplete="scheduleReplies"
+            />
+
             <Button type="submit" variant="contained" sx={{ mt: 3, mb: 2 }}>
               등록
             </Button>
@@ -617,6 +628,7 @@ function DashboardContent() {
               autoComplete="id"
               value={id}
               defaultValue={id}
+              sx={{ display: "none" }}
             />
             <TextField
               margin="normal"
@@ -650,10 +662,11 @@ function DashboardContent() {
               autoComplete="endDate"
               defaultValue={endDate}
             />
+            {/* TODO: 수정모달에서 IntervalType 못 불러오는 현상 수정 */}
             <FormLabel id="radiobutton-label">IntervalType</FormLabel>
             <RadioGroup
               aria-labelledby="radiobutton-label"
-              defaultValue="ONCE"
+              defaultValue={intervalType}
               name="radio-buttons-group"
               row
             >
@@ -717,18 +730,33 @@ function DashboardContent() {
               autoComplete="description"
               defaultValue={description}
             />
-            {/* <TextField
+            members
+            {members.map((a, i) => (
+              <Card>
+                <Box sx={{ p: 2, display: "flex" }}>
+                  <Avatar sx={{ width: 30, height: 30 }} src={a.picture} />
+                  <Typography fontWeight={700}>{a.nickname}</Typography>
+                </Box>
+                <Divider />
+              </Card>
+            ))}
+            users
+            <Card>
+              <Box sx={{ p: 2, display: "flex" }}>
+                <Avatar sx={{ width: 30, height: 30 }} src={user.picture} />
+                <Typography fontWeight={700}>{user.nickname}</Typography>
+              </Box>
+              <Divider />
+            </Card>
+            <TextField
               margin="normal"
-              id="thumbnail"
-              label="thumbnail"
-              name="thumbnail"
-              autoComplete="thumbnail"
-              defaultValue={thumbnail}
+              fullWidth
+              id="scheduleReplies"
+              label="scheduleReplies"
+              name="scheduleReplies"
+              autoComplete="scheduleReplies"
+              defaultValue={scheduleReplies}
             />
-            <Button variant="contained" component="label">
-              Upload
-              <input hidden accept="image/*" multiple type="file" />
-            </Button> */}
             <Button type="submit" variant="contained" sx={{ mt: 3, mb: 2 }}>
               변경
             </Button>
