@@ -1,16 +1,26 @@
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
+import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import Card from "@mui/material/Card";
+import CardActionArea from "@mui/material/CardActionArea";
+import CardActions from "@mui/material/CardActions";
+import CardContent from "@mui/material/CardContent";
+import CardMedia from "@mui/material/CardMedia";
 import Container from "@mui/material/Container";
 import CssBaseline from "@mui/material/CssBaseline";
 import Divider from "@mui/material/Divider";
 import MuiDrawer from "@mui/material/Drawer";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import FormLabel from "@mui/material/FormLabel";
 import Grid from "@mui/material/Grid";
 import IconButton from "@mui/material/IconButton";
 import Link from "@mui/material/Link";
 import List from "@mui/material/List";
 import Modal from "@mui/material/Modal";
 import Paper from "@mui/material/Paper";
+import Radio from "@mui/material/Radio";
+import RadioGroup from "@mui/material/RadioGroup";
 import { createTheme, styled, ThemeProvider } from "@mui/material/styles";
 import TextField from "@mui/material/TextField";
 import Toolbar from "@mui/material/Toolbar";
@@ -29,16 +39,6 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 import moment from "moment";
 import "moment/locale/ko";
 
-import Avatar from "@mui/material/Avatar";
-import Card from "@mui/material/Card";
-import CardActionArea from "@mui/material/CardActionArea";
-import CardActions from "@mui/material/CardActions";
-import CardContent from "@mui/material/CardContent";
-import CardMedia from "@mui/material/CardMedia";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import FormLabel from "@mui/material/FormLabel";
-import Radio from "@mui/material/Radio";
-import RadioGroup from "@mui/material/RadioGroup";
 import ScheduleMapper from "../mapper/ScheduleMapper";
 import ScheduleRepository from "../repository/ScheduleRepository";
 
@@ -162,7 +162,6 @@ function DashboardContent() {
   const [start, setStart] = React.useState("");
   const [startDate, setStartDate] = React.useState("");
   const [thumbnail, setThumbnail] = React.useState("");
-
   const [user, setUser] = React.useState<Member>({
     id: 0,
     nickname: "",
@@ -484,7 +483,7 @@ function DashboardContent() {
                   required
                   fullWidth
                   id="title"
-                  label="title"
+                  label="제목"
                   name="title"
                   autoComplete="title"
                   autoFocus
@@ -496,7 +495,7 @@ function DashboardContent() {
                   required
                   fullWidth
                   id="startDate"
-                  label="startDate"
+                  label="시작일자"
                   name="startDate"
                   type="datetime-local"
                   autoComplete="startDate"
@@ -512,7 +511,7 @@ function DashboardContent() {
                   required
                   fullWidth
                   id="endDate"
-                  label="endDate"
+                  label="종료일자"
                   name="endDate"
                   type="datetime-local"
                   autoComplete="endDate"
@@ -568,7 +567,7 @@ function DashboardContent() {
                   required
                   fullWidth
                   id="intervalValue"
-                  label="intervalValue"
+                  label="반복횟수"
                   name="intervalValue"
                   autoComplete="intervalValue"
                 />
@@ -579,7 +578,7 @@ function DashboardContent() {
                   required
                   fullWidth
                   id="duration"
-                  label="duration"
+                  label="소요시간"
                   name="duration"
                   autoComplete="duration"
                 />
@@ -589,7 +588,7 @@ function DashboardContent() {
                   margin="normal"
                   fullWidth
                   id="description"
-                  label="description"
+                  label="설명"
                   name="description"
                   autoComplete="description"
                 />
@@ -598,10 +597,10 @@ function DashboardContent() {
                 <TextField
                   margin="normal"
                   fullWidth
-                  id="members"
-                  label="members"
-                  name="members"
-                  autoComplete="members"
+                  id="user"
+                  label="작성인"
+                  name="user"
+                  autoComplete="user"
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -609,7 +608,7 @@ function DashboardContent() {
                   margin="normal"
                   fullWidth
                   id="members"
-                  label="members"
+                  label="참가자"
                   name="members"
                   autoComplete="members"
                 />
@@ -619,7 +618,7 @@ function DashboardContent() {
                   margin="normal"
                   fullWidth
                   id="scheduleReplies"
-                  label="scheduleReplies"
+                  label="댓글"
                   name="scheduleReplies"
                   autoComplete="scheduleReplies"
                 />
@@ -668,7 +667,7 @@ function DashboardContent() {
                   required
                   fullWidth
                   id="title"
-                  label="title"
+                  label="제목"
                   name="title"
                   autoComplete="title"
                   defaultValue={title}
@@ -680,7 +679,7 @@ function DashboardContent() {
                   required
                   fullWidth
                   id="startDate"
-                  label="startDate"
+                  label="시작일자"
                   name="startDate"
                   type="datetime-local"
                   autoComplete="startDate"
@@ -693,7 +692,7 @@ function DashboardContent() {
                   required
                   fullWidth
                   id="endDate"
-                  label="endDate"
+                  label="종료일자"
                   name="endDate"
                   type="datetime-local"
                   autoComplete="endDate"
@@ -746,7 +745,7 @@ function DashboardContent() {
                   required
                   fullWidth
                   id="intervalValue"
-                  label="intervalValue"
+                  label="반복횟수"
                   name="intervalValue"
                   autoComplete="intervalValue"
                   defaultValue={intervalValue}
@@ -758,7 +757,7 @@ function DashboardContent() {
                   required
                   fullWidth
                   id="duration"
-                  label="duration ()0분"
+                  label="소요시간"
                   name="duration"
                   autoComplete="duration"
                   defaultValue={duration}
@@ -769,14 +768,14 @@ function DashboardContent() {
                   margin="normal"
                   fullWidth
                   id="description"
-                  label="description"
+                  label="설명"
                   name="description"
                   autoComplete="description"
                   defaultValue={description}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
-                members
+                참가자
                 {members.map((member) => (
                   <Card>
                     <Box sx={{ p: 1, display: "flex" }}>
@@ -792,7 +791,7 @@ function DashboardContent() {
                 ))}
               </Grid>
               <Grid item xs={12} sm={6}>
-                users
+                생성자
                 <Card>
                   <Box sx={{ p: 1, display: "flex" }}>
                     <Avatar sx={{ width: 30, height: 30 }} src={user.picture} />
@@ -805,7 +804,7 @@ function DashboardContent() {
                   margin="normal"
                   fullWidth
                   id="scheduleReplies"
-                  label="scheduleReplies"
+                  label="리플"
                   name="scheduleReplies"
                   autoComplete="scheduleReplies"
                   defaultValue={scheduleReplies}
