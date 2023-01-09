@@ -1,4 +1,4 @@
-import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
+import AppBar from "@mui/material/AppBar";
 import Avatar from "@mui/material/Avatar";
 import Backdrop from "@mui/material/Backdrop";
 import Box from "@mui/material/Box";
@@ -11,29 +11,30 @@ import CardMedia from "@mui/material/CardMedia";
 import CircularProgress from "@mui/material/CircularProgress";
 import Container from "@mui/material/Container";
 import CssBaseline from "@mui/material/CssBaseline";
-import Divider from "@mui/material/Divider";
-import MuiDrawer from "@mui/material/Drawer";
+import Drawer from "@mui/material/Drawer";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import FormLabel from "@mui/material/FormLabel";
 import Grid from "@mui/material/Grid";
 import IconButton from "@mui/material/IconButton";
+import InputAdornment from "@mui/material/InputAdornment";
 import Link from "@mui/material/Link";
 import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemAvatar from "@mui/material/ListItemAvatar";
+import ListItemText from "@mui/material/ListItemText";
 import Modal from "@mui/material/Modal";
 import Paper from "@mui/material/Paper";
 import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
-import { createTheme, styled, ThemeProvider } from "@mui/material/styles";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
 import TextField from "@mui/material/TextField";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import DeleteIcon from "@mui/icons-material/Delete";
 import LoginIcon from "@mui/icons-material/Login";
-import MenuIcon from "@mui/icons-material/Menu";
 
 import * as React from "react";
-import { mainListItems, secondaryListItems } from "./listItems";
 
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import "react-big-calendar/lib/css/react-big-calendar.css";
@@ -43,6 +44,7 @@ import "moment/locale/ko";
 
 import ScheduleMapper from "../mapper/ScheduleMapper";
 import ScheduleRepository from "../repository/ScheduleRepository";
+import FileInput from "./Fileinput";
 
 const localizer = momentLocalizer(moment);
 
@@ -80,53 +82,6 @@ const modalBoxStyle = {
   boxShadow: 24,
   p: 4,
 };
-interface AppBarProps extends MuiAppBarProps {
-  open?: boolean;
-}
-
-const AppBar = styled(MuiAppBar, {
-  shouldForwardProp: (prop) => prop !== "open",
-})<AppBarProps>(({ theme, open }) => ({
-  zIndex: theme.zIndex.drawer + 1,
-  transition: theme.transitions.create(["width", "margin"], {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.leavingScreen,
-  }),
-  ...(open && {
-    marginLeft: drawerWidth,
-    width: `calc(100% - ${drawerWidth}px)`,
-    transition: theme.transitions.create(["width", "margin"], {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-  }),
-}));
-
-const Drawer = styled(MuiDrawer, {
-  shouldForwardProp: (prop) => prop !== "open",
-})(({ theme, open }) => ({
-  "& .MuiDrawer-paper": {
-    position: "relative",
-    whiteSpace: "nowrap",
-    width: drawerWidth,
-    transition: theme.transitions.create("width", {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    boxSizing: "border-box",
-    ...(!open && {
-      overflowX: "hidden",
-      transition: theme.transitions.create("width", {
-        easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.leavingScreen,
-      }),
-      width: theme.spacing(7),
-      [theme.breakpoints.up("sm")]: {
-        width: theme.spacing(9),
-      },
-    }),
-  },
-}));
 
 const mdTheme = createTheme();
 
@@ -138,24 +93,10 @@ type Member = {
 };
 
 function DashboardContent() {
-  const [open, setOpen] = React.useState(true);
-  const toggleDrawer = () => {
-    setOpen(!open);
-  };
-
   const [backdropOpen, setBackdropOpen] = React.useState(false);
-
   const [myEventList, setMyEventList] = React.useState<any[]>([]);
   const [addOpen, setAddOpen] = React.useState(false);
   const [editOpen, setEditOpen] = React.useState(false);
-  const handleAddOpen = () => setAddOpen(true);
-  const handleAddClose = () => setAddOpen(false);
-  const handleEditOpen = () => setEditOpen(true);
-  const handleEditClose = () => setEditOpen(false);
-
-  const handleBackdropClose = () => setBackdropOpen(false);
-  const handleBackdropToggle = () => setBackdropOpen(!backdropOpen);
-
   const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [duration, setDuration] = React.useState("");
@@ -176,6 +117,15 @@ function DashboardContent() {
     status: 0,
   });
 
+  const [secondary, setSecondary] = React.useState(false);
+
+  const handleAddOpen = () => setAddOpen(true);
+  const handleAddClose = () => setAddOpen(false);
+  const handleEditOpen = () => setEditOpen(true);
+  const handleEditClose = () => setEditOpen(false);
+  const handleBackdropClose = () => setBackdropOpen(false);
+  const handleBackdropToggle = () => setBackdropOpen(!backdropOpen);
+
   const scheduleRepository = new ScheduleRepository();
   const scheduleMapper = new ScheduleMapper();
 
@@ -189,7 +139,6 @@ function DashboardContent() {
     return result;
   };
 
-  //2023-01-23T00:00:00
   const handleSelectEvent = React.useCallback((event: any) => {
     // console.log("event", event);
     setTitle(event.title);
@@ -324,24 +273,11 @@ function DashboardContent() {
     <ThemeProvider theme={mdTheme}>
       <Box sx={{ display: "flex" }}>
         <CssBaseline />
-        <AppBar position="absolute" open={open}>
-          <Toolbar
-            sx={{
-              pr: "24px", // keep right padding when drawer closed
-            }}
-          >
-            <IconButton
-              edge="start"
-              color="inherit"
-              aria-label="open drawer"
-              onClick={toggleDrawer}
-              sx={{
-                marginRight: "36px",
-                ...(open && { display: "none" }),
-              }}
-            >
-              <MenuIcon />
-            </IconButton>
+        <AppBar
+          position="fixed"
+          sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        >
+          <Toolbar>
             <Typography
               component="h1"
               variant="h6"
@@ -359,43 +295,56 @@ function DashboardContent() {
             </IconButton>
           </Toolbar>
         </AppBar>
-        <Drawer variant="permanent" open={open}>
-          <Toolbar
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "flex-end",
-              px: [1],
-            }}
-          >
-            <IconButton onClick={toggleDrawer}>
-              <ChevronLeftIcon />
-            </IconButton>
-          </Toolbar>
-          <Divider />
-          <List component="nav">
-            {mainListItems}
-            <Divider sx={{ my: 1 }} />
-            {secondaryListItems}
-          </List>
-        </Drawer>
-        <Box
-          component="main"
+        <Drawer
+          variant="permanent"
           sx={{
-            backgroundColor: (theme) =>
-              theme.palette.mode === "light"
-                ? theme.palette.grey[100]
-                : theme.palette.grey[900],
-            flexGrow: 1,
-            height: "100vh",
-            overflow: "auto",
+            width: drawerWidth,
+            flexShrink: 0,
+            [`& .MuiDrawer-paper`]: {
+              width: drawerWidth,
+              boxSizing: "border-box",
+            },
           }}
         >
+          <Toolbar />
+          <Box sx={{ overflow: "auto" }}>
+            <List>
+              {myEventList.map((result: any, index) => (
+                <Card sx={{ maxWidth: 345 }} key={index}>
+                  <CardActionArea>
+                    <CardMedia
+                      component="img"
+                      height="140"
+                      image={result.thumbnail}
+                    />
+                    <CardContent>
+                      <Typography gutterBottom component="div">
+                        {result.title}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {result.description}
+                      </Typography>
+                    </CardContent>
+                  </CardActionArea>
+                  <CardActions>
+                    <Button size="small" color="primary">
+                      {result.members.length} PEOPLE
+                    </Button>
+                    <Button size="small" color="primary">
+                      {result.startDate} ~ {result.endDate} (D-20)
+                    </Button>
+                  </CardActions>
+                </Card>
+              ))}
+            </List>
+          </Box>
+        </Drawer>
+        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
           <Toolbar />
           <Backdrop
             sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
             open={backdropOpen}
-            // onClick={handleBackdropClose}
+            onClick={handleBackdropClose}
           >
             <CircularProgress color="inherit" />
           </Backdrop>
@@ -403,7 +352,6 @@ function DashboardContent() {
             <Grid container spacing={1.5}>
               <Grid item xs={12}>
                 <Paper sx={{ p: 2, display: "flex", flexDirection: "column" }}>
-                  {/* <Orders /> */}
                   <Calendar
                     localizer={localizer}
                     events={myEventList}
@@ -415,65 +363,6 @@ function DashboardContent() {
                     popup
                     selectable
                   />
-                </Paper>
-              </Grid>
-              <Grid item xs={12} md={8} lg={9}>
-                <Paper
-                  sx={{
-                    p: 2,
-                    display: "flex",
-                    flexDirection: "column",
-                    height: 240,
-                  }}
-                >
-                  Charts
-                </Paper>
-              </Grid>
-              <Grid item xs={12} md={4} lg={3}>
-                <Paper
-                  sx={{
-                    p: 2,
-                    display: "flex",
-                    flexDirection: "column",
-                    height: 240,
-                  }}
-                >
-                  Deposits
-                </Paper>
-              </Grid>
-              <Grid item xs={12}>
-                <Paper sx={{ p: 2, display: "flex", flexDirection: "column" }}>
-                  <Typography gutterBottom variant="h5" component="div">
-                    Events
-                  </Typography>
-                  {myEventList.map((result: any, index) => (
-                    <Card sx={{ maxWidth: 345 }} key={index}>
-                      <CardActionArea>
-                        <CardMedia
-                          component="img"
-                          height="140"
-                          image={result.thumbnail}
-                        />
-                        <CardContent>
-                          <Typography gutterBottom variant="h5" component="div">
-                            {result.title}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {result.description}
-                          </Typography>
-                        </CardContent>
-                      </CardActionArea>
-                      <CardActions>
-                        <Button size="small" color="primary">
-                          10 PEOPLE
-                        </Button>
-                        <Button size="small" color="primary"></Button>
-                        <Button size="small" color="primary">
-                          {result.startDate} ~ {result.endDate} (D-20)
-                        </Button>
-                      </CardActions>
-                    </Card>
-                  ))}
                 </Paper>
               </Grid>
             </Grid>
@@ -493,6 +382,9 @@ function DashboardContent() {
           </Typography>
           <Box component="form" onSubmit={handleAddSubmit} sx={{ mt: 1 }}>
             <Grid container spacing={1.5}>
+              <Grid item xs={12}>
+                <FileInput />
+              </Grid>
               <Grid item xs={12}>
                 <TextField
                   margin="normal"
@@ -538,7 +430,7 @@ function DashboardContent() {
                 />
               </Grid>
               <Grid item xs={12} sm={4}>
-                <FormLabel id="radiobutton-label">IntervalType</FormLabel>
+                <FormLabel id="radiobutton-label">반복종류</FormLabel>
                 <RadioGroup
                   aria-labelledby="radiobutton-label"
                   defaultValue="ONCE"
@@ -597,6 +489,11 @@ function DashboardContent() {
                   label="소요시간"
                   name="duration"
                   autoComplete="duration"
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">분</InputAdornment>
+                    ),
+                  }}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -609,18 +506,9 @@ function DashboardContent() {
                   autoComplete="description"
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid item xs={12}>
                 <TextField
-                  margin="normal"
-                  fullWidth
-                  id="user"
-                  label="작성인"
-                  name="user"
-                  autoComplete="user"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
+                  disabled
                   margin="normal"
                   fullWidth
                   id="members"
@@ -678,6 +566,9 @@ function DashboardContent() {
                 />
               </Grid>
               <Grid item xs={12}>
+                <FileInput />
+              </Grid>
+              <Grid item xs={12}>
                 <TextField
                   margin="normal"
                   required
@@ -716,7 +607,7 @@ function DashboardContent() {
                 />
               </Grid>
               <Grid item xs={12} sm={4}>
-                <FormLabel id="radiobutton-label">IntervalType</FormLabel>
+                <FormLabel id="radiobutton-label">반복종류</FormLabel>
                 <RadioGroup
                   aria-labelledby="radiobutton-label"
                   defaultValue={intervalType}
@@ -777,6 +668,11 @@ function DashboardContent() {
                   name="duration"
                   autoComplete="duration"
                   defaultValue={duration}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">분</InputAdornment>
+                    ),
+                  }}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -790,43 +686,54 @@ function DashboardContent() {
                   defaultValue={description}
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid item xs={12}>
+                주최자
+                <ListItem>
+                  <ListItemAvatar>
+                    <Avatar sx={{ width: 30, height: 30 }} src={user.picture} />
+                  </ListItemAvatar>
+                  <ListItemText
+                    primary={user.nickname}
+                    secondary={secondary ? "Secondary text" : null}
+                  />
+                </ListItem>
+              </Grid>
+              <Grid item xs={12}>
                 참가자
                 {members.map((member) => (
-                  <Card>
-                    <Box sx={{ p: 1, display: "flex" }}>
+                  <ListItem
+                    secondaryAction={
+                      <IconButton edge="end" aria-label="delete">
+                        <DeleteIcon />
+                      </IconButton>
+                    }
+                  >
+                    <ListItemAvatar>
                       <Avatar
                         sx={{ width: 30, height: 30 }}
                         src={member.picture}
                       />
-                      <Typography fontWeight={700}>
-                        {member.nickname}
-                      </Typography>
-                    </Box>
-                  </Card>
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary={member.nickname}
+                      secondary={secondary ? "Secondary text" : null}
+                    />
+                  </ListItem>
                 ))}
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                생성자
-                <Card>
-                  <Box sx={{ p: 1, display: "flex" }}>
-                    <Avatar sx={{ width: 30, height: 30 }} src={user.picture} />
-                    <Typography fontWeight={700}>{user.nickname}</Typography>
-                  </Box>
-                </Card>
               </Grid>
               <Grid item xs={12}>
                 <TextField
                   margin="normal"
                   fullWidth
                   id="scheduleReplies"
-                  label="리플"
+                  label="댓글"
                   name="scheduleReplies"
                   autoComplete="scheduleReplies"
                   defaultValue={scheduleReplies}
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+
+              <Grid item xs={12}>
                 <Button type="submit" variant="contained" sx={{ mt: 3, mb: 2 }}>
                   변경
                 </Button>

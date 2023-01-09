@@ -43,7 +43,7 @@ export default class ScheduleMapper {
               .add(scheTime.hours, "h")
               .add(scheTime.minutes, "m")
               .add(scheTime.seconds, "s")
-              .format("YYYY-MM-DDTHH:mm")
+              .format("YYYY-MM-DDTHH:mm");
           });
 
         this.pushEventsInList(calendarSchedule, startDateList, scheduleInfo);
@@ -62,7 +62,7 @@ export default class ScheduleMapper {
               .add(scheTime.hours, "h")
               .add(scheTime.minutes, "m")
               .add(scheTime.seconds, "s")
-              .format("YYYY-MM-DDTHH:mm")
+              .format("YYYY-MM-DDTHH:mm");
           });
 
         this.getFilteredList(startDateList, scheduleInfo).then((list) => {
@@ -83,7 +83,7 @@ export default class ScheduleMapper {
               .add(scheTime.hours, "h")
               .add(scheTime.minutes, "m")
               .add(scheTime.seconds, "s")
-              .format("YYYY-MM-DDTHH:mm")
+              .format("YYYY-MM-DDTHH:mm");
           });
 
         this.getFilteredList(startDateList, scheduleInfo).then((list) => {
@@ -106,7 +106,7 @@ export default class ScheduleMapper {
               .add(scheTime.hours, "h")
               .add(scheTime.minutes, "m")
               .add(scheTime.seconds, "s")
-              .format("YYYY-MM-DDTHH:mm")
+              .format("YYYY-MM-DDTHH:mm");
           });
 
         this.getFilteredList(startDateList, scheduleInfo).then((list) => {
@@ -126,12 +126,11 @@ export default class ScheduleMapper {
 
     Object.assign(convertedSchedule, { start: startTime });
 
-    // TODO: ONCE 일때랑 아닐때 IF 조건 걸기
     if (intervalType === "ONCE") {
       Object.assign(convertedSchedule, { end: endTime });
     } else {
       Object.assign(convertedSchedule, {
-        end: new Date(startTime.getTime() + schedule["duration"] * 600000),
+        end: new Date(startTime.getTime() + schedule["duration"] * 60000),
       });
     }
 
