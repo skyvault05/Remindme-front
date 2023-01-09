@@ -1,5 +1,6 @@
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
 import Avatar from "@mui/material/Avatar";
+import Backdrop from "@mui/material/Backdrop";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
@@ -7,6 +8,7 @@ import CardActionArea from "@mui/material/CardActionArea";
 import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
 import CardMedia from "@mui/material/CardMedia";
+import CircularProgress from "@mui/material/CircularProgress";
 import Container from "@mui/material/Container";
 import CssBaseline from "@mui/material/CssBaseline";
 import Divider from "@mui/material/Divider";
@@ -141,6 +143,8 @@ function DashboardContent() {
     setOpen(!open);
   };
 
+  const [backdropOpen, setBackdropOpen] = React.useState(false);
+
   const [myEventList, setMyEventList] = React.useState<any[]>([]);
   const [addOpen, setAddOpen] = React.useState(false);
   const [editOpen, setEditOpen] = React.useState(false);
@@ -148,6 +152,9 @@ function DashboardContent() {
   const handleAddClose = () => setAddOpen(false);
   const handleEditOpen = () => setEditOpen(true);
   const handleEditClose = () => setEditOpen(false);
+
+  const handleBackdropClose = () => setBackdropOpen(false);
+  const handleBackdropToggle = () => setBackdropOpen(!backdropOpen);
 
   const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
@@ -208,9 +215,11 @@ function DashboardContent() {
   );
 
   const getEventLoading = () => {
+    handleBackdropToggle();
     scheduleRepository.getMySchedules().then((response) => {
       scheduleMapper.toCalendarSchedule(response).then((eventList) => {
         setMyEventList(eventList);
+        handleBackdropClose();
       });
     });
   };
@@ -383,6 +392,13 @@ function DashboardContent() {
           }}
         >
           <Toolbar />
+          <Backdrop
+            sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+            open={backdropOpen}
+            // onClick={handleBackdropClose}
+          >
+            <CircularProgress color="inherit" />
+          </Backdrop>
           <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
             <Grid container spacing={1.5}>
               <Grid item xs={12}>
