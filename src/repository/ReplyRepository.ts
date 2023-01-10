@@ -3,13 +3,13 @@ import axios from "axios";
 const rootUrl = "/api/v1/scheduleReply";
 
 export default class ReplyRepository {
-  async getScheduleReplies() {
-    let response = await axios.get(rootUrl + "/getScheduleReplies/");
+  async getMyScheduleReplies() {
+    let response = await axios.get(rootUrl + "/getMyScheduleReplies");
     return response.data;
   }
 
-  async getMyScheduleReplies(scheduleId: number) {
-    let response = await axios.get(rootUrl + "/getMyScheduleReplies/" + scheduleId);
+  async getScheduleReplies(scheduleId: number) {
+    let response = await axios.get(rootUrl + "/getScheduleReplies" + scheduleId);
     return response.data;
   }
 
