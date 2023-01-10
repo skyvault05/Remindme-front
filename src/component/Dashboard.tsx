@@ -1,5 +1,4 @@
 import AppBar from "@mui/material/AppBar";
-import Avatar from "@mui/material/Avatar";
 import Backdrop from "@mui/material/Backdrop";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -12,26 +11,15 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Container from "@mui/material/Container";
 import CssBaseline from "@mui/material/CssBaseline";
 import Drawer from "@mui/material/Drawer";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import FormLabel from "@mui/material/FormLabel";
 import Grid from "@mui/material/Grid";
 import IconButton from "@mui/material/IconButton";
-import InputAdornment from "@mui/material/InputAdornment";
 import Link from "@mui/material/Link";
 import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemAvatar from "@mui/material/ListItemAvatar";
-import ListItemText from "@mui/material/ListItemText";
-import Modal from "@mui/material/Modal";
 import Paper from "@mui/material/Paper";
-import Radio from "@mui/material/Radio";
-import RadioGroup from "@mui/material/RadioGroup";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import TextField from "@mui/material/TextField";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 
-import DeleteIcon from "@mui/icons-material/Delete";
 import LoginIcon from "@mui/icons-material/Login";
 
 import * as React from "react";
@@ -44,7 +32,8 @@ import "moment/locale/ko";
 
 import ScheduleMapper from "../mapper/ScheduleMapper";
 import ScheduleRepository from "../repository/ScheduleRepository";
-import FileInput from "./Fileinput";
+import { AddModal } from "./Add";
+import { UpdateModal } from "./Update";
 
 const localizer = momentLocalizer(moment);
 
@@ -68,24 +57,9 @@ const Copyright = (props: any) => {
 
 const drawerWidth: number = 300;
 
-const modalBoxStyle = {
-  marginTop: 8,
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  position: "absolute" as "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  bgcolor: "background.paper",
-  border: "2px solid #000",
-  boxShadow: 24,
-  p: 4,
-};
-
 const mdTheme = createTheme();
 
-type Member = {
+export type Member = {
   id: number;
   nickname: string;
   picture: string;
@@ -95,6 +69,9 @@ type Member = {
 function DashboardContent() {
   const [backdropOpen, setBackdropOpen] = React.useState(false);
   const [myEventList, setMyEventList] = React.useState<any[]>([]);
+  const [todayFilteredEventList, setTodayFilteredEventList] = React.useState<
+    any[]
+  >([]);
   const [addOpen, setAddOpen] = React.useState(false);
   const [editOpen, setEditOpen] = React.useState(false);
   const [title, setTitle] = React.useState("");
@@ -168,9 +145,21 @@ function DashboardContent() {
     scheduleRepository.getMySchedules().then((response) => {
       scheduleMapper.toCalendarSchedule(response).then((eventList) => {
         setMyEventList(eventList);
+        todayFiltering();
         handleBackdropClose();
       });
     });
+  };
+
+  const todayFiltering = () => {
+    const result = myEventList.filter(
+      (event) =>
+        moment(event.startDate).diff(moment().format("YYYY-MM-DD"), "days") >=
+          0 ||
+        moment(event.endDate).diff(moment().format("YYYY-MM-DD"), "days") >= 0
+    );
+    setTodayFilteredEventList(result);
+    console.log(todayFilteredEventList);
   };
 
   const intervalTypeCheck = (data: FormData) => {
@@ -309,7 +298,7 @@ function DashboardContent() {
           <Toolbar />
           <Box sx={{ overflow: "auto" }}>
             <List>
-              {myEventList.map((result: any, index) => (
+              {todayFilteredEventList.map((result: any, index) => (
                 <Card sx={{ maxWidth: 345 }} key={index}>
                   <CardActionArea>
                     <CardMedia
@@ -370,389 +359,25 @@ function DashboardContent() {
           </Container>
         </Box>
       </Box>
-      <Modal
-        open={addOpen}
-        onClose={handleAddClose}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
-      >
-        <Box sx={modalBoxStyle}>
-          <Typography component="h1" variant="h5">
-            추가 모달
-          </Typography>
-          <Box component="form" onSubmit={handleAddSubmit} sx={{ mt: 1 }}>
-            <Grid container spacing={1.5}>
-              <Grid item xs={12}>
-                <FileInput />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  margin="normal"
-                  required
-                  fullWidth
-                  id="title"
-                  label="제목"
-                  name="title"
-                  autoComplete="title"
-                  autoFocus
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  margin="normal"
-                  required
-                  fullWidth
-                  id="startDate"
-                  label="시작일자"
-                  name="startDate"
-                  type="datetime-local"
-                  autoComplete="startDate"
-                  defaultValue={start}
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  margin="normal"
-                  required
-                  fullWidth
-                  id="endDate"
-                  label="종료일자"
-                  name="endDate"
-                  type="datetime-local"
-                  autoComplete="endDate"
-                  defaultValue={end}
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <FormLabel id="radiobutton-label">반복종류</FormLabel>
-                <RadioGroup
-                  aria-labelledby="radiobutton-label"
-                  defaultValue="ONCE"
-                  name="radio-buttons-group"
-                  row
-                >
-                  <FormControlLabel
-                    value="ONCE"
-                    name="radio_once"
-                    control={<Radio />}
-                    label="한번"
-                  />
-                  <FormControlLabel
-                    value="DAILY"
-                    name="radio_daily"
-                    control={<Radio />}
-                    label="매일"
-                  />
-                  <FormControlLabel
-                    value="WEEKLY"
-                    name="radio_weekly"
-                    control={<Radio />}
-                    label="매주"
-                  />
-                  <FormControlLabel
-                    value="MONTHLY"
-                    name="radio_monthly"
-                    control={<Radio />}
-                    label="매달"
-                  />
-                  <FormControlLabel
-                    value="ANNUAL"
-                    name="radio_annual"
-                    control={<Radio />}
-                    label="매년"
-                  />
-                </RadioGroup>
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <TextField
-                  margin="normal"
-                  required
-                  fullWidth
-                  id="intervalValue"
-                  label="반복횟수"
-                  name="intervalValue"
-                  autoComplete="intervalValue"
-                />
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <TextField
-                  margin="normal"
-                  required
-                  fullWidth
-                  id="duration"
-                  label="소요시간"
-                  name="duration"
-                  autoComplete="duration"
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">분</InputAdornment>
-                    ),
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  margin="normal"
-                  fullWidth
-                  id="description"
-                  label="설명"
-                  name="description"
-                  autoComplete="description"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  disabled
-                  margin="normal"
-                  fullWidth
-                  id="members"
-                  label="참가자"
-                  name="members"
-                  autoComplete="members"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  margin="normal"
-                  fullWidth
-                  id="scheduleReplies"
-                  label="댓글"
-                  name="scheduleReplies"
-                  autoComplete="scheduleReplies"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <Button type="submit" variant="contained" sx={{ mt: 3, mb: 2 }}>
-                  등록
-                </Button>
-                <Button type="reset" variant="outlined" sx={{ mt: 3, mb: 2 }}>
-                  취소
-                </Button>
-              </Grid>
-            </Grid>
-          </Box>
-        </Box>
-      </Modal>
-      <Modal
-        open={editOpen}
-        onClose={handleEditClose}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
-      >
-        <Box sx={modalBoxStyle}>
-          <Typography component="h1" variant="h5">
-            수정 모달
-          </Typography>
-          <Box component="form" onSubmit={handleUpdateSubmit} sx={{ mt: 1 }}>
-            <Grid container spacing={1.5}>
-              <Grid item xs={12}>
-                <TextField
-                  margin="normal"
-                  required
-                  fullWidth
-                  id="id"
-                  label="id"
-                  name="id"
-                  autoComplete="id"
-                  value={id}
-                  defaultValue={id}
-                  sx={{ display: "none" }}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <FileInput />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  margin="normal"
-                  required
-                  fullWidth
-                  id="title"
-                  label="제목"
-                  name="title"
-                  autoComplete="title"
-                  defaultValue={title}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  margin="normal"
-                  required
-                  fullWidth
-                  id="startDate"
-                  label="시작일자"
-                  name="startDate"
-                  type="datetime-local"
-                  autoComplete="startDate"
-                  defaultValue={startDate}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  margin="normal"
-                  required
-                  fullWidth
-                  id="endDate"
-                  label="종료일자"
-                  name="endDate"
-                  type="datetime-local"
-                  autoComplete="endDate"
-                  defaultValue={endDate}
-                />
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <FormLabel id="radiobutton-label">반복종류</FormLabel>
-                <RadioGroup
-                  aria-labelledby="radiobutton-label"
-                  defaultValue={intervalType}
-                  name="radio-buttons-group"
-                  row
-                >
-                  <FormControlLabel
-                    value="ONCE"
-                    name="radio_once"
-                    control={<Radio />}
-                    label="한번"
-                  />
-                  <FormControlLabel
-                    value="DAILY"
-                    name="radio_daily"
-                    control={<Radio />}
-                    label="매일"
-                  />
-                  <FormControlLabel
-                    value="WEEKLY"
-                    name="radio_weekly"
-                    control={<Radio />}
-                    label="매주"
-                  />
-                  <FormControlLabel
-                    value="MONTHLY"
-                    name="radio_monthly"
-                    control={<Radio />}
-                    label="매달"
-                  />
-                  <FormControlLabel
-                    value="ANNUAL"
-                    name="radio_annual"
-                    control={<Radio />}
-                    label="매년"
-                  />
-                </RadioGroup>
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <TextField
-                  margin="normal"
-                  required
-                  fullWidth
-                  id="intervalValue"
-                  label="반복횟수"
-                  name="intervalValue"
-                  autoComplete="intervalValue"
-                  defaultValue={intervalValue}
-                />
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <TextField
-                  margin="normal"
-                  required
-                  fullWidth
-                  id="duration"
-                  label="소요시간"
-                  name="duration"
-                  autoComplete="duration"
-                  defaultValue={duration}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">분</InputAdornment>
-                    ),
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  margin="normal"
-                  fullWidth
-                  id="description"
-                  label="설명"
-                  name="description"
-                  autoComplete="description"
-                  defaultValue={description}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                주최자
-                <ListItem>
-                  <ListItemAvatar>
-                    <Avatar sx={{ width: 30, height: 30 }} src={user.picture} />
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={user.nickname}
-                    secondary={secondary ? "Secondary text" : null}
-                  />
-                </ListItem>
-              </Grid>
-              <Grid item xs={12}>
-                참가자
-                {members.map((member) => (
-                  <ListItem
-                    secondaryAction={
-                      <IconButton edge="end" aria-label="delete">
-                        <DeleteIcon />
-                      </IconButton>
-                    }
-                  >
-                    <ListItemAvatar>
-                      <Avatar
-                        sx={{ width: 30, height: 30 }}
-                        src={member.picture}
-                      />
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={member.nickname}
-                      secondary={secondary ? "Secondary text" : null}
-                    />
-                  </ListItem>
-                ))}
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  margin="normal"
-                  fullWidth
-                  id="scheduleReplies"
-                  label="댓글"
-                  name="scheduleReplies"
-                  autoComplete="scheduleReplies"
-                  defaultValue={scheduleReplies}
-                />
-              </Grid>
-
-              <Grid item xs={12}>
-                <Button type="submit" variant="contained" sx={{ mt: 3, mb: 2 }}>
-                  변경
-                </Button>
-                <Button
-                  variant="contained"
-                  color="error"
-                  onClick={() => handleDeleteClick(id)}
-                  sx={{ mt: 3, mb: 2 }}
-                >
-                  삭제
-                </Button>
-                <Button type="reset" variant="outlined" sx={{ mt: 3, mb: 2 }}>
-                  취소
-                </Button>
-              </Grid>
-            </Grid>
-          </Box>
-        </Box>
-      </Modal>
+      {AddModal(addOpen, handleAddClose, handleAddSubmit, start, end)}
+      {UpdateModal(
+        editOpen,
+        handleEditClose,
+        handleUpdateSubmit,
+        id,
+        title,
+        startDate,
+        endDate,
+        intervalType,
+        intervalValue,
+        duration,
+        description,
+        user,
+        secondary,
+        members,
+        scheduleReplies,
+        handleDeleteClick
+      )}
     </ThemeProvider>
   );
 }

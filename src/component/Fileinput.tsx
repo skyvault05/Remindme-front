@@ -31,12 +31,22 @@ const FileInput = () => {
       </label>
       {!imageUrl && !selectedImage && (
         <Box mt={2} textAlign="center">
-          <img src="blob:http://localhost:3000/fca17228-ce42-4c00-96e6-d8e8cee0b08b" alt="" width="100%" height="150px" />
+          <img
+            src="blob:http://localhost:3000/da090343-5a98-4c13-9fc6-82057805d464"
+            alt=""
+            width="100%"
+            height="150px"
+          />
         </Box>
       )}
       {imageUrl && selectedImage && (
         <Box mt={2} textAlign="center">
-          <img src={imageUrl} alt={selectedImage.name} width="100%" height="150px" />
+          <img
+            src={imageUrl}
+            alt={selectedImage.name}
+            width="100%"
+            height="150px"
+          />
         </Box>
       )}
     </>
