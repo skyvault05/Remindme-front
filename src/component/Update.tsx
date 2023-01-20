@@ -17,7 +17,9 @@ import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
 import TextField from "@mui/material/TextField";
 
-import { Member } from "./Dashboard";
+import SendIcon from "@mui/icons-material/Send";
+
+import { Member, Replies } from "./Dashboard";
 
 export function UpdateModal(
   editOpen: boolean,
@@ -34,7 +36,7 @@ export function UpdateModal(
   user: Member,
   secondary: boolean,
   members: Member[],
-  scheduleReplies: never[],
+  scheduleReplies: Replies[],
   handleDeleteClick: (id: number) => void
 ) {
   const modalBoxStyle = {
@@ -75,6 +77,10 @@ export function UpdateModal(
                   defaultValue={id}
                   sx={{ display: "none" }}
                 />
+              </Grid>
+            </Grid>
+            <Grid container item spacing={3}>
+              <Grid item xs={8}>
                 <TextField
                   margin="normal"
                   required
@@ -85,10 +91,20 @@ export function UpdateModal(
                   autoComplete="title"
                   defaultValue={title}
                 />
+                <TextField
+                  margin="normal"
+                  fullWidth
+                  id="description"
+                  label="설명"
+                  name="description"
+                  autoComplete="description"
+                  defaultValue={description}
+                  multiline
+                  rows={10}
+                />
+                {/* <FileInput /> */}
               </Grid>
-            </Grid>
-            <Grid container item spacing={3}>
-              <Grid item xs={8}>
+              <Grid item xs={4}>
                 <TextField
                   margin="normal"
                   required
@@ -111,20 +127,6 @@ export function UpdateModal(
                   autoComplete="endDate"
                   defaultValue={endDate}
                 />
-                <TextField
-                  margin="normal"
-                  fullWidth
-                  id="description"
-                  label="설명"
-                  name="description"
-                  autoComplete="description"
-                  defaultValue={description}
-                  multiline
-                  rows={10}
-                />
-                {/* <FileInput /> */}
-              </Grid>
-              <Grid item xs={4}>
                 <FormLabel id="radiobutton-label">반복종류</FormLabel>
                 <RadioGroup
                   aria-labelledby="radiobutton-label"
@@ -224,6 +226,11 @@ export function UpdateModal(
             </Grid>
             <Grid container item spacing={3}>
               <Grid item xs={12}>
+                <React.Fragment>
+                  {scheduleReplies.map((a, i) => (
+                    <div>{a.description}</div>
+                  ))}
+                </React.Fragment>
                 <TextField
                   margin="normal"
                   fullWidth
@@ -231,7 +238,20 @@ export function UpdateModal(
                   label="댓글"
                   name="scheduleReplies"
                   autoComplete="scheduleReplies"
-                  defaultValue={scheduleReplies}
+                  // defaultValue={scheduleReplies}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <Button
+                          variant="contained"
+                          onClick={() => sendReply()}
+                          endIcon={<SendIcon />}
+                        >
+                          Send
+                        </Button>
+                      </InputAdornment>
+                    ),
+                  }}
                 />
               </Grid>
             </Grid>
@@ -258,4 +278,7 @@ export function UpdateModal(
       </Box>
     </Modal>
   );
+}
+function sendReply(): void {
+  return console.log("send");
 }
