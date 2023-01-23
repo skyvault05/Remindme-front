@@ -45,11 +45,11 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 import moment from "moment";
 import "moment/locale/ko";
 
+import axios from "axios";
 import ScheduleMapper from "../mapper/ScheduleMapper";
 import ReplyRepository from "../repository/ReplyRepository";
 import ScheduleRepository from "../repository/ScheduleRepository";
 import UserRepository from "../repository/UserRepository";
-import FileInput from "./Fileinput";
 
 const localizer = momentLocalizer(moment);
 
@@ -221,6 +221,34 @@ function DashboardContent() {
     getEventLoading();
   };
 
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleButtonClick = (event: any) => {
+    // console.log("event", event.target.files);
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleChange = (e: any) => {
+    const fd = new FormData();
+
+    fd.append("thumbnail", e.target.files[0]);
+
+    console.log(fd.get("thumbnail"));
+    axios
+      .post("http://localhost:3000/api/v1/schedule/uploadThumbnail", fd, {
+        headers: {
+          "Content-Type": `multipart/form-data; `,
+        },
+      })
+      .then((response) => {
+        console.log("response", response);
+        setThumbnail(response.data);
+      })
+      .catch((error) => console.log(error));
+  };
+
   const deleteExecute = (id: any) => {
     const result = myEventList.filter((event) => event.id !== id);
     setMyEventList(result);
@@ -302,13 +330,21 @@ function DashboardContent() {
             >
               RemindMe
             </Typography>
-            <IconButton
+            {/* <IconButton
               color="inherit"
               href="http://localhost:8080/oauth2/authorization/google"
-              sx={{ fontSize: 40 }}
+              sx={{ fontSize: 40, color: pink[500] }}
             >
               <LoginIcon />
-            </IconButton>
+            </IconButton> */}
+            <Button
+              variant="contained"
+              href="http://localhost:8080/oauth2/authorization/google"
+              endIcon={<LoginIcon />}
+              color="error"
+            >
+              Login
+            </Button>
           </Toolbar>
         </AppBar>
         <Drawer
@@ -353,7 +389,7 @@ function DashboardContent() {
                         {result.members.length} PEOPLE
                       </Button>
                       <Button size="small" color="primary">
-                        {result.startDate} ~ {result.endDate}
+                        {result.startDate} <br />~ {result.endDate}
                       </Button>
                     </CardActions>
                   </Card>
@@ -403,11 +439,37 @@ function DashboardContent() {
             <Grid container spacing={1}>
               <Grid container item spacing={3}>
                 <Grid item xs={12}>
-                  <FileInput />
+                  <label htmlFor="select-image">
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      component="span"
+                      onClick={handleButtonClick}
+                    >
+                      Upload Image
+                    </Button>
+                  </label>
+                  <input
+                    accept="image/*"
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleChange}
+                    style={{ display: "none" }}
+                  />
                 </Grid>
               </Grid>
               <Grid container item spacing={3}>
                 <Grid item xs={12}>
+                  <TextField
+                    margin="normal"
+                    fullWidth
+                    id="thumbnail"
+                    label="thumbnail"
+                    name="thumbnail"
+                    autoComplete="thumbnail"
+                    value={thumbnail}
+                    sx={{ display: "none" }}
+                  />
                   <TextField
                     margin="normal"
                     required
@@ -508,6 +570,7 @@ function DashboardContent() {
                     label="반복횟수"
                     name="intervalValue"
                     autoComplete="intervalValue"
+                    type="number"
                   />
                   <TextField
                     margin="normal"
@@ -567,7 +630,23 @@ function DashboardContent() {
             <Grid container spacing={1}>
               <Grid container item spacing={3}>
                 <Grid item xs={12}>
-                  {/* <FileInput /> */}
+                  <label htmlFor="select-image">
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      component="span"
+                      onClick={handleButtonClick}
+                    >
+                      Upload Image
+                    </Button>
+                  </label>
+                  <input
+                    accept="image/*"
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleChange}
+                    style={{ display: "none" }}
+                  />
                 </Grid>
               </Grid>
               <Grid container item spacing={3}>
@@ -581,6 +660,16 @@ function DashboardContent() {
                     name="id"
                     autoComplete="id"
                     defaultValue={id}
+                    sx={{ display: "none" }}
+                  />
+                  <TextField
+                    margin="normal"
+                    fullWidth
+                    id="thumbnail"
+                    label="thumbnail"
+                    name="thumbnail"
+                    autoComplete="thumbnail"
+                    value={thumbnail}
                     sx={{ display: "none" }}
                   />
                   <TextField
@@ -608,6 +697,18 @@ function DashboardContent() {
                     multiline
                     rows={10}
                   />
+                  <ListItem>
+                    <ListItemAvatar>
+                      <Avatar
+                        sx={{ width: 30, height: 30 }}
+                        src={user.picture}
+                      />
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary={user.nickname}
+                      secondary={secondary ? "Secondary text" : null}
+                    />
+                  </ListItem>
                   <TextField
                     margin="normal"
                     fullWidth
@@ -701,6 +802,7 @@ function DashboardContent() {
                     name="intervalValue"
                     autoComplete="intervalValue"
                     defaultValue={intervalValue}
+                    type="number"
                   />
                   <TextField
                     margin="normal"

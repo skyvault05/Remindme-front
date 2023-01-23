@@ -29,9 +29,4 @@ export default class ScheduleRepository {
     );
     return response.data;
   }
-
-  async uploadThumbnail(data: any) {
-    let response = await axios.post("/uploadThumbnail", data);
-    return response.data;
-  }
 }
