@@ -48,6 +48,7 @@ import "moment/locale/ko";
 import ScheduleMapper from "../mapper/ScheduleMapper";
 import ReplyRepository from "../repository/ReplyRepository";
 import ScheduleRepository from "../repository/ScheduleRepository";
+import UserRepository from "../repository/UserRepository";
 import FileInput from "./Fileinput";
 
 const localizer = momentLocalizer(moment);
@@ -141,10 +142,12 @@ function DashboardContent() {
 
   const scheduleRepository = new ScheduleRepository();
   const replyRepository = new ReplyRepository();
+  const userRepository = new UserRepository();
   const scheduleMapper = new ScheduleMapper();
 
   React.useEffect(() => {
     getEventLoading();
+    checkLogin();
   }, []);
 
   const changeDate = (date: any) => {
@@ -187,8 +190,12 @@ function DashboardContent() {
         })
         .catch((error) => alert(error));
     });
-    replyRepository.getMyScheduleReplies().then((response) => {
-      console.log(response);
+    replyRepository.getMyScheduleReplies().then((response) => {});
+  };
+
+  const checkLogin = () => {
+    userRepository.getMyInfo().then((response) => {
+      console.log("checkLogin", response);
     });
   };
 
@@ -298,6 +305,7 @@ function DashboardContent() {
             <IconButton
               color="inherit"
               href="http://localhost:8080/oauth2/authorization/google"
+              sx={{ fontSize: 40 }}
             >
               <LoginIcon />
             </IconButton>
