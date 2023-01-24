@@ -182,6 +182,7 @@ function DashboardContent() {
   const getEventLoading = () => {
     handleBackdropToggle();
     scheduleRepository.getMySchedules().then((response) => {
+      console.log('response', response)
       scheduleMapper
         .toCalendarSchedule(response)
         .then((eventList) => {

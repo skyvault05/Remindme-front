@@ -8,6 +8,7 @@ type temp = {
 export default class ScheduleMapper {
   async toCalendarSchedule(scheduleList: any) {
     let calendarSchedule: any[] = [];
+    console.log('scheduleList', scheduleList)
     for (const index in scheduleList) {
       this.sortByIntervalType(calendarSchedule, scheduleList[index]);
     }
@@ -114,6 +115,7 @@ export default class ScheduleMapper {
         });
         break;
       default:
+        console.log(scheduleInfo);
         console.log("스케쥴 형식이 다릅니다.");
     }
   }
