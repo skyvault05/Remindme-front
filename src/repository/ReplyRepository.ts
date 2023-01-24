@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const rootUrl = "http://54.238.154.254:8080/api/v1/scheduleReply";
+const rootUrl = "/api/v1/scheduleReply";
 
 export default class ReplyRepository {
   async getMyScheduleReplies() {

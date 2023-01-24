@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const rootUrl = "http://54.238.154.254:8080/api/v1/user";
+const rootUrl = "/api/v1/user";
 
 export default class UserRepository {
   async getMyInfo() {
