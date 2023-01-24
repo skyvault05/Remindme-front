@@ -238,7 +238,7 @@ function DashboardContent() {
 
     console.log(fd.get("thumbnail"));
     axios
-      .post("http://18.183.67.247:3000/api/v1/schedule/uploadThumbnail", fd, {
+      .post("http://54.238.154.254:8080/api/v1/schedule/uploadThumbnail", fd, {
         headers: {
           "Content-Type": `multipart/form-data; `,
         },

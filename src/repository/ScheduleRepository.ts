@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const rootUrl = "/api/v1/schedule";
+const rootUrl = "http://54.238.154.254:8080/api/v1/schedule";
 
 export default class ScheduleRepository {
   async getMySchedules() {
