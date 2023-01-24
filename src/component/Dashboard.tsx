@@ -237,16 +237,16 @@ function DashboardContent() {
 
     console.log(fd.get("thumbnail"));
     axios
-      .post("http://localhost:3000/api/v1/schedule/uploadThumbnail", fd, {
+      .post("http://18.183.67.247:3000/api/v1/schedule/uploadThumbnail", fd, {
         headers: {
           "Content-Type": `multipart/form-data; `,
         },
       })
-      .then((response) => {
+      .then((response:any) => {
         console.log("response", response);
         setThumbnail(response.data);
       })
-      .catch((error) => console.log(error));
+      .catch((error:any) => console.log(error));
   };
 
   const deleteExecute = (id: any) => {
@@ -330,16 +330,9 @@ function DashboardContent() {
             >
               RemindMe
             </Typography>
-            {/* <IconButton
-              color="inherit"
-              href="http://localhost:8080/oauth2/authorization/google"
-              sx={{ fontSize: 40, color: pink[500] }}
-            >
-              <LoginIcon />
-            </IconButton> */}
             <Button
               variant="contained"
-              href="http://localhost:8080/oauth2/authorization/google"
+              href="http://ec2-54-238-154-254.ap-northeast-1.compute.amazonaws.com:8080/oauth2/authorization/google"
               endIcon={<LoginIcon />}
               color="error"
             >
