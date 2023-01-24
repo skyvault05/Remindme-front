@@ -378,9 +378,9 @@ function DashboardContent() {
                       </CardContent>
                     </CardActionArea>
                     <CardActions>
-                      <Button size="small" color="primary">
+                      {/* <Button size="small" color="primary">
                         {result.members.length} PEOPLE
-                      </Button>
+                      </Button> */}
                       <Button size="small" color="primary">
                         {result.startDate} <br />~ {result.endDate}
                       </Button>
