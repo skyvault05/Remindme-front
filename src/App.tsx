@@ -1,14 +1,15 @@
-import { LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import Dashboard from "./component/Dashboard";
+import { Route, Routes } from 'react-router-dom';
+import Oauth from "./component/Oauth";
 
 function App() {
   return (
     <>
-      <LocalizationProvider dateAdapter={AdapterMoment}>
-        <Dashboard />
-      </LocalizationProvider>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/oauth2/redirect" element={<Oauth />} />
+      </Routes>
     </>
   );
 }

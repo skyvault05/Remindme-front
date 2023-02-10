@@ -1,4 +1,3 @@
-import axios from "axios";
 import { customAxios } from "../lib/customAxios";
 
 const rootUrl = "/api/v1/user";
@@ -24,7 +23,7 @@ export default class UserRepository {
   }
 
   async setNickname(nickname: string) {
-    let response = await axios.post(rootUrl + "/setNickname/" + nickname);
+    let response = await customAxios.post(rootUrl + "/setNickname/" + nickname);
     return response.data;
   }
 }

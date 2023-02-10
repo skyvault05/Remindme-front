@@ -45,11 +45,14 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 import moment from "moment";
 import "moment/locale/ko";
 
-import axios from "axios";
 import ScheduleMapper from "../mapper/ScheduleMapper";
 import ReplyRepository from "../repository/ReplyRepository";
 import ScheduleRepository from "../repository/ScheduleRepository";
 import UserRepository from "../repository/UserRepository";
+import { customAxios } from "../lib/customAxios";
+
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 
 const localizer = momentLocalizer(moment);
 
@@ -124,6 +127,8 @@ function DashboardContent() {
   const [start, setStart] = React.useState("");
   const [startDate, setStartDate] = React.useState("");
   const [thumbnail, setThumbnail] = React.useState("");
+  const [imageSrc, setImageSrc] = React.useState('');
+
   const [user, setUser] = React.useState<Member>({
     id: 0,
     nickname: "",
@@ -134,7 +139,10 @@ function DashboardContent() {
   const [secondary, setSecondary] = React.useState(false);
 
   const handleAddOpen = () => setAddOpen(true);
-  const handleAddClose = () => setAddOpen(false);
+  const handleAddClose = () => {
+    setAddOpen(false);
+    setImageSrc('')
+  }
   const handleEditOpen = () => setEditOpen(true);
   const handleEditClose = () => setEditOpen(false);
   const handleBackdropClose = () => setBackdropOpen(false);
@@ -148,6 +156,7 @@ function DashboardContent() {
   React.useEffect(() => {
     getEventLoading();
     checkLogin();
+    console.log(customAxios.defaults.headers.common['Authorization'])
   }, []);
 
   const changeDate = (date: any) => {
@@ -191,7 +200,7 @@ function DashboardContent() {
         })
         .catch((error) => alert(error));
     });
-    replyRepository.getMyScheduleReplies().then((response) => {});
+    replyRepository.getMyScheduleReplies().then((response) => { });
   };
 
   const checkLogin = () => {
@@ -237,17 +246,18 @@ function DashboardContent() {
     fd.append("thumbnail", e.target.files[0]);
 
     console.log(fd.get("thumbnail"));
-    axios
+    customAxios
       .post("/api/v1/schedule/uploadThumbnail", fd, {
         headers: {
           "Content-Type": `multipart/form-data; `,
         },
       })
-      .then((response:any) => {
+      .then((response: any) => {
         console.log("response", response);
         setThumbnail(response.data);
+        setImageSrc(response.data);
       })
-      .catch((error:any) => console.log(error));
+      .catch((error: any) => console.log(error));
   };
 
   const deleteExecute = (id: any) => {
@@ -314,595 +324,599 @@ function DashboardContent() {
   };
 
   return (
-    <ThemeProvider theme={mdTheme}>
-      <Box sx={{ display: "flex" }}>
-        <CssBaseline />
-        <AppBar
-          position="fixed"
-          sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
-        >
-          <Toolbar>
-            <Typography
-              component="h1"
-              variant="h6"
-              color="inherit"
-              noWrap
-              sx={{ flexGrow: 1 }}
-            >
-              RemindMe
-            </Typography>
-            <Button
-              variant="contained"
-              href="http://ec2-54-238-154-254.ap-northeast-1.compute.amazonaws.com:8080/oauth2/authorization/google"
-              endIcon={<LoginIcon />}
-              color="error"
-            >
-              Login
-            </Button>
-          </Toolbar>
-        </AppBar>
-        <Drawer
-          variant="permanent"
-          sx={{
-            width: drawerWidth,
-            flexShrink: 0,
-            [`& .MuiDrawer-paper`]: {
-              width: drawerWidth,
-              boxSizing: "border-box",
-            },
-          }}
-        >
-          <Toolbar />
-          <Box sx={{ overflow: "auto" }}>
-            <List>
-              {myEventList
-                .filter(
-                  (event) =>
-                    newFunction(event.startDate) >= 0 ||
-                    newFunction(event.endDate) >= 0
-                )
-                .map((result: any, index) => (
-                  <Card sx={{ maxWidth: 345 }} key={index}>
-                    <CardActionArea>
-                      <CardMedia
-                        component="img"
-                        height="140"
-                        image={result.thumbnail}
-                      />
-                      <CardContent>
-                        <Typography gutterBottom component="div">
-                          {result.title}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {result.description}
-                        </Typography>
-                      </CardContent>
-                    </CardActionArea>
-                    <CardActions>
-                      {/* <Button size="small" color="primary">
-                        {result.members.length} PEOPLE
-                      </Button> */}
-                      <Button size="small" color="primary">
-                        {result.startDate} <br />~ {result.endDate}
-                      </Button>
-                    </CardActions>
-                  </Card>
-                ))}
-            </List>
-          </Box>
-        </Drawer>
-        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-          <Toolbar />
-          <Backdrop
-            sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
-            open={backdropOpen}
-            onClick={handleBackdropClose}
+    <LocalizationProvider dateAdapter={AdapterMoment}>
+
+      <ThemeProvider theme={mdTheme}>
+        <Box sx={{ display: "flex" }}>
+          <CssBaseline />
+          <AppBar
+            position="fixed"
+            sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
           >
-            <CircularProgress color="inherit" />
-          </Backdrop>
-          <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-            <Grid container spacing={1.5}>
-              <Grid item xs={12}>
-                <Paper sx={{ p: 2, display: "flex", flexDirection: "column" }}>
-                  <Calendar
-                    localizer={localizer}
-                    events={myEventList}
-                    startAccessor="start"
-                    endAccessor="end"
-                    style={{ height: 700 }}
-                    onSelectEvent={handleSelectEvent}
-                    onSelectSlot={handleSelectSlot}
-                    popup
-                    selectable
-                  />
-                </Paper>
-              </Grid>
-            </Grid>
-            <Copyright sx={{ pt: 4 }} />
-          </Container>
-        </Box>
-      </Box>
-      <Modal
-        open={addOpen}
-        onClose={handleAddClose}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
-      >
-        <Box sx={modalBoxStyle}>
-          <Box component="form" onSubmit={handleAddSubmit} sx={{ mt: 1 }}>
-            <Grid container spacing={1}>
-              <Grid container item spacing={3}>
+            <Toolbar>
+              <Typography
+                component="h1"
+                variant="h6"
+                color="inherit"
+                noWrap
+                sx={{ flexGrow: 1 }}
+              >
+                RemindMe
+              </Typography>
+              <Button
+                variant="contained"
+                href="http://localhost:8080/oauth2/authorization/google?redirect_uri=http://localhost:3000/oauth2/redirect"
+                endIcon={<LoginIcon />}
+                color="error"
+              >
+                Login
+              </Button>
+            </Toolbar>
+          </AppBar>
+          <Drawer
+            variant="permanent"
+            sx={{
+              width: drawerWidth,
+              flexShrink: 0,
+              [`& .MuiDrawer-paper`]: {
+                width: drawerWidth,
+                boxSizing: "border-box",
+              },
+            }}
+          >
+            <Toolbar />
+            <Box sx={{ overflow: "auto" }}>
+              <List>
+                {myEventList
+                  .filter(
+                    (event) =>
+                      newFunction(event.startDate) >= 0 ||
+                      newFunction(event.endDate) >= 0
+                  )
+                  .map((result: any, index) => (
+                    <Card sx={{ maxWidth: 345 }} key={index}>
+                      <CardActionArea>
+                        <CardMedia
+                          component="img"
+                          height="140"
+                          image={result.thumbnail}
+                        />
+                        <CardContent>
+                          <Typography gutterBottom component="div">
+                            {result.title}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {result.description}
+                          </Typography>
+                        </CardContent>
+                      </CardActionArea>
+                      <CardActions>
+                        <Button size="small" color="primary">
+                          {result.members.length} PEOPLE
+                        </Button>
+                        <Button size="small" color="primary">
+                          {result.startDate} <br />~ {result.endDate}
+                        </Button>
+                      </CardActions>
+                    </Card>
+                  ))}
+              </List>
+            </Box>
+          </Drawer>
+          <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+            <Toolbar />
+            <Backdrop
+              sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+              open={backdropOpen}
+              onClick={handleBackdropClose}
+            >
+              <CircularProgress color="inherit" />
+            </Backdrop>
+            <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+              <Grid container spacing={1.5}>
                 <Grid item xs={12}>
-                  <label htmlFor="select-image">
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      component="span"
-                      onClick={handleButtonClick}
-                    >
-                      Upload Image
-                    </Button>
-                  </label>
-                  <input
-                    accept="image/*"
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleChange}
-                    style={{ display: "none" }}
-                  />
+                  <Paper sx={{ p: 2, display: "flex", flexDirection: "column" }}>
+                    <Calendar
+                      localizer={localizer}
+                      events={myEventList}
+                      startAccessor="start"
+                      endAccessor="end"
+                      style={{ height: 700 }}
+                      onSelectEvent={handleSelectEvent}
+                      onSelectSlot={handleSelectSlot}
+                      popup
+                      selectable
+                    />
+                  </Paper>
                 </Grid>
               </Grid>
-              <Grid container item spacing={3}>
-                <Grid item xs={12}>
-                  <TextField
-                    margin="normal"
-                    fullWidth
-                    id="thumbnail"
-                    label="thumbnail"
-                    name="thumbnail"
-                    autoComplete="thumbnail"
-                    value={thumbnail}
-                    sx={{ display: "none" }}
-                  />
-                  <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="title"
-                    label="제목"
-                    name="title"
-                    autoComplete="title"
-                    autoFocus
-                  />
-                </Grid>
-              </Grid>
-              <Grid container item spacing={3}>
-                <Grid item xs={8}>
-                  <TextField
-                    margin="normal"
-                    fullWidth
-                    id="description"
-                    label="설명"
-                    name="description"
-                    autoComplete="description"
-                    multiline
-                    rows={10}
-                  />
-                </Grid>
-                <Grid item xs={4}>
-                  <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="startDate"
-                    label="시작일자"
-                    name="startDate"
-                    type="datetime-local"
-                    autoComplete="startDate"
-                    defaultValue={start}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                  />
-                  <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="endDate"
-                    label="종료일자"
-                    name="endDate"
-                    type="datetime-local"
-                    autoComplete="endDate"
-                    defaultValue={end}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                  />
-                  <FormLabel id="radiobutton-label">반복종류</FormLabel>
-                  <RadioGroup
-                    aria-labelledby="radiobutton-label"
-                    defaultValue="ONCE"
-                    name="radio-buttons-group"
-                    row
-                  >
-                    <FormControlLabel
-                      value="ONCE"
-                      name="radio_once"
-                      control={<Radio />}
-                      label="한번"
-                    />
-                    <FormControlLabel
-                      value="DAILY"
-                      name="radio_daily"
-                      control={<Radio />}
-                      label="매일"
-                    />
-                    <FormControlLabel
-                      value="WEEKLY"
-                      name="radio_weekly"
-                      control={<Radio />}
-                      label="매주"
-                    />
-                    <FormControlLabel
-                      value="MONTHLY"
-                      name="radio_monthly"
-                      control={<Radio />}
-                      label="매달"
-                    />
-                    <FormControlLabel
-                      value="ANNUAL"
-                      name="radio_annual"
-                      control={<Radio />}
-                      label="매년"
-                    />
-                  </RadioGroup>
-                  <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="intervalValue"
-                    label="반복횟수"
-                    name="intervalValue"
-                    autoComplete="intervalValue"
-                    type="number"
-                  />
-                  <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="duration"
-                    label="소요시간"
-                    name="duration"
-                    autoComplete="duration"
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">분</InputAdornment>
-                      ),
-                    }}
-                  />
-                  {/* 참가자
-                  <ListItem
-                    secondaryAction={
-                      <IconButton edge="end" aria-label="delete">
-                        <DeleteIcon />
-                      </IconButton>
-                    }
-                  >
-                    <ListItemAvatar>
-                      <Avatar sx={{ width: 30, height: 30 }} />
-                    </ListItemAvatar>
-                    <ListItemText />
-                  </ListItem> */}
-                </Grid>
-              </Grid>
-              <Grid container item spacing={3}>
-                <Grid item xs={12}>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    sx={{ mt: 3, mb: 2 }}
-                  >
-                    등록
-                  </Button>
-                  <Button type="reset" variant="outlined" sx={{ mt: 3, mb: 2 }}>
-                    취소
-                  </Button>
-                </Grid>
-              </Grid>
-            </Grid>
+              <Copyright sx={{ pt: 4 }} />
+            </Container>
           </Box>
         </Box>
-      </Modal>
-      <Modal
-        open={editOpen}
-        onClose={handleEditClose}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
-      >
-        <Box sx={modalBoxStyle}>
-          <Box component="form" onSubmit={handleUpdateSubmit} sx={{ mt: 1 }}>
-            <Grid container spacing={1}>
-              <Grid container item spacing={3}>
-                <Grid item xs={12}>
-                  <label htmlFor="select-image">
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      component="span"
-                      onClick={handleButtonClick}
+        <Modal
+          open={addOpen}
+          onClose={handleAddClose}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"  
+        >
+          <Box sx={modalBoxStyle}>
+            <Box component="form" onSubmit={handleAddSubmit} sx={{ mt: 1 }}>
+              <Grid container spacing={1}>
+                <Grid container item spacing={3}>
+                  <Grid item xs={12}>
+                    <label htmlFor="select-image">
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        component="span"
+                        onClick={handleButtonClick}
+                      >
+                        Upload Image
+                      </Button>
+                    </label>
+                    <input
+                      accept="image/*"
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleChange}
+                      style={{ display: "none" }}
+                    />
+                    <div className="preview">
+                      {imageSrc && <img src={imageSrc} alt="preview-img" />}
+                    </div>
+                  </Grid>
+                </Grid>
+                <Grid container item spacing={3}>
+                  <Grid item xs={12}>
+                    <TextField
+                      margin="normal"
+                      fullWidth
+                      id="thumbnail"
+                      label="thumbnail"
+                      name="thumbnail"
+                      autoComplete="thumbnail"
+                      value={thumbnail}
+                      sx={{ display: "none" }}
+                    />
+                    <TextField
+                      margin="normal"
+                      required
+                      fullWidth
+                      id="title"
+                      label="제목"
+                      name="title"
+                      autoComplete="title"
+                      autoFocus
+                    />
+                  </Grid>
+                </Grid>
+                <Grid container item spacing={3}>
+                  <Grid item xs={8}>
+                    <TextField
+                      margin="normal"
+                      fullWidth
+                      id="description"
+                      label="설명"
+                      name="description"
+                      autoComplete="description"
+                      multiline
+                      rows={10}
+                    />
+                  </Grid>
+                  <Grid item xs={4}>
+                    <TextField
+                      margin="normal"
+                      required
+                      fullWidth
+                      id="startDate"
+                      label="시작일자"
+                      name="startDate"
+                      type="datetime-local"
+                      autoComplete="startDate"
+                      defaultValue={start}
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                    />
+                    <TextField
+                      margin="normal"
+                      required
+                      fullWidth
+                      id="endDate"
+                      label="종료일자"
+                      name="endDate"
+                      type="datetime-local"
+                      autoComplete="endDate"
+                      defaultValue={end}
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                    />
+                    <FormLabel id="radiobutton-label">반복종류</FormLabel>
+                    <RadioGroup
+                      aria-labelledby="radiobutton-label"
+                      defaultValue="ONCE"
+                      name="radio-buttons-group"
+                      row
                     >
-                      Upload Image
-                    </Button>
-                  </label>
-                  <input
-                    accept="image/*"
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleChange}
-                    style={{ display: "none" }}
-                  />
-                </Grid>
-              </Grid>
-              <Grid container item spacing={3}>
-                <Grid item xs={12}>
-                  <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="id"
-                    label="id"
-                    name="id"
-                    autoComplete="id"
-                    defaultValue={id}
-                    sx={{ display: "none" }}
-                  />
-                  <TextField
-                    margin="normal"
-                    fullWidth
-                    id="thumbnail"
-                    label="thumbnail"
-                    name="thumbnail"
-                    autoComplete="thumbnail"
-                    value={thumbnail}
-                    sx={{ display: "none" }}
-                  />
-                  <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="title"
-                    label="제목"
-                    name="title"
-                    autoComplete="title"
-                    defaultValue={title}
-                  />
-                </Grid>
-              </Grid>
-              <Grid container item spacing={3}>
-                <Grid item xs={8}>
-                  <TextField
-                    margin="normal"
-                    fullWidth
-                    id="description"
-                    label="설명"
-                    name="description"
-                    autoComplete="description"
-                    defaultValue={description}
-                    multiline
-                    rows={10}
-                  />
-                  <ListItem>
-                    <ListItemAvatar>
-                      <Avatar
-                        sx={{ width: 30, height: 30 }}
-                        src={user.picture}
+                      <FormControlLabel
+                        value="ONCE"
+                        name="radio_once"
+                        control={<Radio />}
+                        label="한번"
                       />
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={user.nickname}
-                      secondary={secondary ? "Secondary text" : null}
-                    />
-                  </ListItem>
-                  <TextField
-                    margin="normal"
-                    fullWidth
-                    id="scheduleReplies"
-                    label="댓글"
-                    name="scheduleReplies"
-                    autoComplete="scheduleReplies"
-                    // defaultValue={scheduleReplies}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <Button
-                            variant="contained"
-                            onClick={() => console.log("send")}
-                            endIcon={<SendIcon />}
-                          >
-                            Send
-                          </Button>
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={4}>
-                  <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="startDate"
-                    label="시작일자"
-                    name="startDate"
-                    type="datetime-local"
-                    autoComplete="startDate"
-                    defaultValue={startDate}
-                  />
-                  <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="endDate"
-                    label="종료일자"
-                    name="endDate"
-                    type="datetime-local"
-                    autoComplete="endDate"
-                    defaultValue={endDate}
-                  />
-                  <FormLabel id="radiobutton-label">반복종류</FormLabel>
-                  <RadioGroup
-                    aria-labelledby="radiobutton-label"
-                    defaultValue={intervalType}
-                    name="radio-buttons-group"
-                    row
-                  >
-                    <FormControlLabel
-                      value="ONCE"
-                      name="radio_once"
-                      control={<Radio />}
-                      label="한번"
-                    />
-                    <FormControlLabel
-                      value="DAILY"
-                      name="radio_daily"
-                      control={<Radio />}
-                      label="매일"
-                    />
-                    <FormControlLabel
-                      value="WEEKLY"
-                      name="radio_weekly"
-                      control={<Radio />}
-                      label="매주"
-                    />
-                    <FormControlLabel
-                      value="MONTHLY"
-                      name="radio_monthly"
-                      control={<Radio />}
-                      label="매달"
-                    />
-                    <FormControlLabel
-                      value="ANNUAL"
-                      name="radio_annual"
-                      control={<Radio />}
-                      label="매년"
-                    />
-                  </RadioGroup>
-                  <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="intervalValue"
-                    label="반복횟수"
-                    name="intervalValue"
-                    autoComplete="intervalValue"
-                    defaultValue={intervalValue}
-                    type="number"
-                  />
-                  <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="duration"
-                    label="소요시간"
-                    name="duration"
-                    autoComplete="duration"
-                    defaultValue={duration}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">분</InputAdornment>
-                      ),
-                    }}
-                  />
-                  주최자
-                  <ListItem>
-                    <ListItemAvatar>
-                      <Avatar
-                        sx={{ width: 30, height: 30 }}
-                        src={user.picture}
+                      <FormControlLabel
+                        value="DAILY"
+                        name="radio_daily"
+                        control={<Radio />}
+                        label="매일"
                       />
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={user.nickname}
-                      secondary={secondary ? "Secondary text" : null}
+                      <FormControlLabel
+                        value="WEEKLY"
+                        name="radio_weekly"
+                        control={<Radio />}
+                        label="매주"
+                      />
+                      <FormControlLabel
+                        value="MONTHLY"
+                        name="radio_monthly"
+                        control={<Radio />}
+                        label="매달"
+                      />
+                      <FormControlLabel
+                        value="ANNUAL"
+                        name="radio_annual"
+                        control={<Radio />}
+                        label="매년"
+                      />
+                    </RadioGroup>
+                    <TextField
+                      margin="normal"
+                      required
+                      fullWidth
+                      id="intervalValue"
+                      label="반복횟수"
+                      name="intervalValue"
+                      autoComplete="intervalValue"
+                      type="number"
                     />
-                  </ListItem>
-                  참가자
-                  {members.map((member, i) => (
+                    <TextField
+                      margin="normal"
+                      required
+                      fullWidth
+                      id="duration"
+                      label="소요시간"
+                      name="duration"
+                      autoComplete="duration"
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">분</InputAdornment>
+                        ),
+                      }}
+                    />
+                    참가자
                     <ListItem
                       secondaryAction={
                         <IconButton edge="end" aria-label="delete">
                           <DeleteIcon />
                         </IconButton>
                       }
-                      key={i}
                     >
+                      <ListItemAvatar>
+                        <Avatar sx={{ width: 30, height: 30 }} />
+                      </ListItemAvatar>
+                      <ListItemText />
+                    </ListItem>
+                  </Grid>
+                </Grid>
+                <Grid container item spacing={3}>
+                  <Grid item xs={12}>
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      sx={{ mt: 3, mb: 2 }}
+                    >
+                      등록
+                    </Button>
+                    <Button type="reset" variant="outlined" sx={{ mt: 3, mb: 2 }}>
+                      취소
+                    </Button>
+                  </Grid>
+                </Grid>
+              </Grid>
+            </Box>
+          </Box>
+        </Modal>
+        <Modal
+          open={editOpen}
+          onClose={handleEditClose}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+        >
+          <Box sx={modalBoxStyle}>
+            <Box component="form" onSubmit={handleUpdateSubmit} sx={{ mt: 1 }}>
+              <Grid container spacing={1}>
+                <Grid container item spacing={3}>
+                  <Grid item xs={12}>
+                    <label htmlFor="select-image">
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        component="span"
+                        onClick={handleButtonClick}
+                      >
+                        Upload Image
+                      </Button>
+                    </label>
+                    <input
+                      accept="image/*"
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleChange}
+                      style={{ display: "none" }}
+                    />
+                    <div className="preview">
+                      {imageSrc && <img src={imageSrc} alt="preview-img" />}
+                    </div>
+                  </Grid>
+                </Grid>
+                <Grid container item spacing={3}>
+                  <Grid item xs={12}>
+                    <TextField
+                      margin="normal"
+                      required
+                      fullWidth
+                      id="id"
+                      label="id"
+                      name="id"
+                      autoComplete="id"
+                      defaultValue={id}
+                      sx={{ display: "none" }}
+                    />
+                    <TextField
+                      margin="normal"
+                      fullWidth
+                      id="thumbnail"
+                      label="thumbnail"
+                      name="thumbnail"
+                      autoComplete="thumbnail"
+                      value={thumbnail}
+                      sx={{ display: "none" }}
+                    />
+                    <TextField
+                      margin="normal"
+                      required
+                      fullWidth
+                      id="title"
+                      label="제목"
+                      name="title"
+                      autoComplete="title"
+                      defaultValue={title}
+                    />
+                  </Grid>
+                </Grid>
+                <Grid container item spacing={3}>
+                  <Grid item xs={8}>
+                    <TextField
+                      margin="normal"
+                      fullWidth
+                      id="description"
+                      label="설명"
+                      name="description"
+                      autoComplete="description"
+                      defaultValue={description}
+                      multiline
+                      rows={10}
+                    />
+                    <ListItem>
                       <ListItemAvatar>
                         <Avatar
                           sx={{ width: 30, height: 30 }}
-                          src={member.picture}
+                          src={user.picture}
                         />
                       </ListItemAvatar>
                       <ListItemText
-                        primary={member.nickname}
+                        primary={user.nickname}
                         secondary={secondary ? "Secondary text" : null}
                       />
                     </ListItem>
-                  ))}
-                  <TextField
-                    margin="normal"
-                    fullWidth
-                    id="members"
-                    name="members"
-                    autoComplete="members"
-                    // defaultValue={scheduleReplies}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <Button
-                            variant="contained"
-                            onClick={() => console.log("send")}
-                            endIcon={<PersonIcon />}
-                          >
-                            멤버추가
-                          </Button>
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
+                    <TextField
+                      margin="normal"
+                      fullWidth
+                      id="scheduleReplies"
+                      label="댓글"
+                      name="scheduleReplies"
+                      autoComplete="scheduleReplies"
+                      // defaultValue={scheduleReplies}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <Button
+                              variant="contained"
+                              onClick={() => console.log("send")}
+                              endIcon={<SendIcon />}
+                            >
+                              Send
+                            </Button>
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={4}>
+                    <TextField
+                      margin="normal"
+                      required
+                      fullWidth
+                      id="startDate"
+                      label="시작일자"
+                      name="startDate"
+                      type="datetime-local"
+                      autoComplete="startDate"
+                      defaultValue={startDate}
+                    />
+                    <TextField
+                      margin="normal"
+                      required
+                      fullWidth
+                      id="endDate"
+                      label="종료일자"
+                      name="endDate"
+                      type="datetime-local"
+                      autoComplete="endDate"
+                      defaultValue={endDate}
+                    />
+                    <FormLabel id="radiobutton-label">반복종류</FormLabel>
+                    <RadioGroup
+                      aria-labelledby="radiobutton-label"
+                      defaultValue={intervalType}
+                      name="radio-buttons-group"
+                      row
+                    >
+                      <FormControlLabel
+                        value="ONCE"
+                        name="radio_once"
+                        control={<Radio />}
+                        label="한번"
+                      />
+                      <FormControlLabel
+                        value="DAILY"
+                        name="radio_daily"
+                        control={<Radio />}
+                        label="매일"
+                      />
+                      <FormControlLabel
+                        value="WEEKLY"
+                        name="radio_weekly"
+                        control={<Radio />}
+                        label="매주"
+                      />
+                      <FormControlLabel
+                        value="MONTHLY"
+                        name="radio_monthly"
+                        control={<Radio />}
+                        label="매달"
+                      />
+                      <FormControlLabel
+                        value="ANNUAL"
+                        name="radio_annual"
+                        control={<Radio />}
+                        label="매년"
+                      />
+                    </RadioGroup>
+                    <TextField
+                      margin="normal"
+                      required
+                      fullWidth
+                      id="intervalValue"
+                      label="반복횟수"
+                      name="intervalValue"
+                      autoComplete="intervalValue"
+                      defaultValue={intervalValue}
+                      type="number"
+                    />
+                    <TextField
+                      margin="normal"
+                      required
+                      fullWidth
+                      id="duration"
+                      label="소요시간"
+                      name="duration"
+                      autoComplete="duration"
+                      defaultValue={duration}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">분</InputAdornment>
+                        ),
+                      }}
+                    />
+                    주최자
+                    <ListItem>
+                      <ListItemAvatar>
+                        <Avatar
+                          sx={{ width: 30, height: 30 }}
+                          src={user.picture}
+                        />
+                      </ListItemAvatar>
+                      <ListItemText
+                        primary={user.nickname}
+                        secondary={secondary ? "Secondary text" : null}
+                      />
+                    </ListItem>
+                    참가자
+                    {members.map((member, i) => (
+                      <ListItem
+                        secondaryAction={
+                          <IconButton edge="end" aria-label="delete">
+                            <DeleteIcon />
+                          </IconButton>
+                        }
+                        key={i}
+                      >
+                        <ListItemAvatar>
+                          <Avatar
+                            sx={{ width: 30, height: 30 }}
+                            src={member.picture}
+                          />
+                        </ListItemAvatar>
+                        <ListItemText
+                          primary={member.nickname}
+                          secondary={secondary ? "Secondary text" : null}
+                        />
+                      </ListItem>
+                    ))}
+                    <TextField
+                      margin="normal"
+                      fullWidth
+                      id="members"
+                      name="members"
+                      autoComplete="members"
+                      // defaultValue={scheduleReplies}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <Button
+                              variant="contained"
+                              onClick={() => console.log("send")}
+                              endIcon={<PersonIcon />}
+                            >
+                              멤버추가
+                            </Button>
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  </Grid>
+                </Grid>
+                <Grid container item spacing={3}>
+                  <Grid item xs={12}>
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      sx={{ mt: 3, mb: 2 }}
+                    >
+                      변경
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="error"
+                      onClick={() => handleDeleteClick(id)}
+                      sx={{ mt: 3, mb: 2 }}
+                    >
+                      삭제
+                    </Button>
+                    <Button type="reset" variant="outlined" sx={{ mt: 3, mb: 2 }}>
+                      취소
+                    </Button>
+                  </Grid>
                 </Grid>
               </Grid>
-              {/* <Grid container item spacing={3}>
-                <Grid item xs={12}>
-                  
-                </Grid>
-              </Grid> */}
-              <Grid container item spacing={3}>
-                <Grid item xs={12}>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    sx={{ mt: 3, mb: 2 }}
-                  >
-                    변경
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="error"
-                    onClick={() => handleDeleteClick(id)}
-                    sx={{ mt: 3, mb: 2 }}
-                  >
-                    삭제
-                  </Button>
-                  <Button type="reset" variant="outlined" sx={{ mt: 3, mb: 2 }}>
-                    취소
-                  </Button>
-                </Grid>
-              </Grid>
-            </Grid>
+            </Box>
           </Box>
-        </Box>
-      </Modal>
-    </ThemeProvider>
+        </Modal>
+      </ThemeProvider>
+    </LocalizationProvider>
   );
 }
 

@@ -1,4 +1,3 @@
-import axios from "axios";
 import { customAxios } from "../lib/customAxios";
 
 const rootUrl = "/api/v1/scheduleReply";
