@@ -8,4 +8,3 @@ export const customAxios: AxiosInstance = axios.create({
 
 customAxios.defaults.headers.common['Authorization']  = localStorage.getItem("Authorization")
 
-console.log('2222:', localStorage.getItem("Authorization"))

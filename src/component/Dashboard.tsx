@@ -32,11 +32,8 @@ import TextField from "@mui/material/TextField";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 
-import PersonIcon from "@mui/icons-material/Person";
-import SendIcon from "@mui/icons-material/Send";
-
 import LoginIcon from "@mui/icons-material/Login";
-
+import LogoutIcon from '@mui/icons-material/Logout';
 import * as React from "react";
 
 import { Calendar, momentLocalizer } from "react-big-calendar";
@@ -86,7 +83,7 @@ export type Member = {
 
 export type Replies = {
   id: number;
-  user: Member[];
+  user: Member;
   schedule: number;
   description: string;
   createdDate: string;
@@ -156,7 +153,6 @@ function DashboardContent() {
   React.useEffect(() => {
     getEventLoading();
     checkLogin();
-    console.log(customAxios.defaults.headers.common['Authorization'])
   }, []);
 
   const changeDate = (date: any) => {
@@ -175,7 +171,7 @@ function DashboardContent() {
     setId(event.id);
     setMembers(event.members);
     setUser(event.user);
-
+    setScheduleReplies(event.scheduleReplies);
     handleEditOpen();
   }, []);
 
@@ -234,7 +230,6 @@ function DashboardContent() {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleButtonClick = (event: any) => {
-    // console.log("event", event.target.files);
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
@@ -310,6 +305,15 @@ function DashboardContent() {
         handleEditClose();
       })
       .catch((error) => alert(error));
+
+    replyRepository.storeScheduleReply({
+      schedule: data.get("id"),
+      description: "테스트댓글",
+
+    }).then((response) => {
+      console.log('reply_RESPONSE', response);
+    })
+      .catch((error) => alert(error));
   };
 
   const handleDeleteClick = (id: number) => {
@@ -323,6 +327,23 @@ function DashboardContent() {
       .catch((error) => alert(error));
   };
 
+  const loginButton = <Button
+    variant="contained"
+    href="http://localhost:8080/oauth2/authorization/google?redirect_uri=http://localhost:3000/oauth2/redirect"
+    endIcon={<LoginIcon />}
+    color="error"
+  >
+    Login
+  </Button>;
+
+  const logoutButton = <Button
+    variant="contained"
+    onClick={() => console.log('logout')}
+    endIcon={<LogoutIcon />}
+    color="error"
+  >
+    Logout
+  </Button>;
   return (
     <LocalizationProvider dateAdapter={AdapterMoment}>
 
@@ -343,14 +364,7 @@ function DashboardContent() {
               >
                 RemindMe
               </Typography>
-              <Button
-                variant="contained"
-                href="http://localhost:8080/oauth2/authorization/google?redirect_uri=http://localhost:3000/oauth2/redirect"
-                endIcon={<LoginIcon />}
-                color="error"
-              >
-                Login
-              </Button>
+              {loginButton}
             </Toolbar>
           </AppBar>
           <Drawer
@@ -438,7 +452,7 @@ function DashboardContent() {
           open={addOpen}
           onClose={handleAddClose}
           aria-labelledby="modal-modal-title"
-          aria-describedby="modal-modal-description"  
+          aria-describedby="modal-modal-description"
         >
           <Box sx={modalBoxStyle}>
             <Box component="form" onSubmit={handleAddSubmit} sx={{ mt: 1 }}>
@@ -595,19 +609,6 @@ function DashboardContent() {
                         ),
                       }}
                     />
-                    참가자
-                    <ListItem
-                      secondaryAction={
-                        <IconButton edge="end" aria-label="delete">
-                          <DeleteIcon />
-                        </IconButton>
-                      }
-                    >
-                      <ListItemAvatar>
-                        <Avatar sx={{ width: 30, height: 30 }} />
-                      </ListItemAvatar>
-                      <ListItemText />
-                    </ListItem>
                   </Grid>
                 </Grid>
                 <Grid container item spacing={3}>
@@ -709,26 +710,62 @@ function DashboardContent() {
                       multiline
                       rows={10}
                     />
-                    <ListItem>
-                      <ListItemAvatar>
-                        <Avatar
-                          sx={{ width: 30, height: 30 }}
-                          src={user.picture}
+                    <Box>
+                      <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
+                        {scheduleReplies.map((reply, i) => (
+                          <ListItem alignItems="flex-start" key={i}>
+                            <ListItemAvatar>
+                              <Avatar alt={reply.user.nickname} src={reply.user.picture} />
+                            </ListItemAvatar>
+                            <ListItemText
+                              primary={reply.description}
+                              secondary={
+                                <React.Fragment>
+                                  <Typography
+                                    sx={{ display: 'inline' }}
+                                    component="span"
+                                    variant="body2"
+                                    color="text.primary"
+                                  >
+                                    {reply.user.nickname}
+                                  </Typography>
+                                </React.Fragment>
+                              }
+                            />
+                          </ListItem>
+
+                        ))}
+
+                      </List>
+
+                      {/* {members.map((member, i) => (
+                      <ListItem
+                        secondaryAction={
+                          <IconButton edge="end" aria-label="delete">
+                            <DeleteIcon />
+                          </IconButton>
+                        }
+                        key={i}
+                      >
+                        <ListItemAvatar>
+                          <Avatar
+                            sx={{ width: 30, height: 30 }}
+                            src={member.picture}
+                          />
+                        </ListItemAvatar>
+                        <ListItemText
+                          primary={member.nickname ? member.nickname: "test2"}
                         />
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={user.nickname}
-                        secondary={secondary ? "Secondary text" : null}
-                      />
-                    </ListItem>
-                    <TextField
+                      </ListItem>
+                    ))} */}
+                    </Box>
+                    {/* <TextField
                       margin="normal"
                       fullWidth
                       id="scheduleReplies"
                       label="댓글"
                       name="scheduleReplies"
                       autoComplete="scheduleReplies"
-                      // defaultValue={scheduleReplies}
                       InputProps={{
                         endAdornment: (
                           <InputAdornment position="end">
@@ -742,7 +779,7 @@ function DashboardContent() {
                           </InputAdornment>
                         ),
                       }}
-                    />
+                    /> */}
                   </Grid>
                   <Grid item xs={4}>
                     <TextField
@@ -840,8 +877,7 @@ function DashboardContent() {
                         />
                       </ListItemAvatar>
                       <ListItemText
-                        primary={user.nickname}
-                        secondary={secondary ? "Secondary text" : null}
+                        primary={user.nickname ? user.nickname : "unknown"}
                       />
                     </ListItem>
                     참가자
@@ -861,12 +897,11 @@ function DashboardContent() {
                           />
                         </ListItemAvatar>
                         <ListItemText
-                          primary={member.nickname}
-                          secondary={secondary ? "Secondary text" : null}
+                          primary={member.nickname ? member.nickname : "unknown"}
                         />
                       </ListItem>
                     ))}
-                    <TextField
+                    {/* <TextField
                       margin="normal"
                       fullWidth
                       id="members"
@@ -886,7 +921,7 @@ function DashboardContent() {
                           </InputAdornment>
                         ),
                       }}
-                    />
+                    /> */}
                   </Grid>
                 </Grid>
                 <Grid container item spacing={3}>

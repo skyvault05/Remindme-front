@@ -7,6 +7,7 @@ export default class UserRepository {
     let response = await customAxios.get(rootUrl + "/getMyInfo");
     return response.data;
   }
+  
   async findUser(id: string) {
     let response = await customAxios.post(rootUrl + "/findUser/" + id);
     return response.data;
