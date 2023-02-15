@@ -9,7 +9,7 @@ export default class ReplyRepository {
   }
 
   async getScheduleReplies(scheduleId: number) {
-    let response = await customAxios.get(rootUrl + "/getScheduleReplies" + scheduleId);
+    let response = await customAxios.get(rootUrl + "/getScheduleReplies/" + scheduleId);
     return response.data;
   }
 
@@ -18,9 +18,9 @@ export default class ReplyRepository {
     return response.data;
   }
 
-  async deleteScheduleReply(scheduleId: number) {
+  async deleteScheduleReply(replyId: number) {
     let response = await customAxios.delete(
-      rootUrl + "/deleteScheduleReply/" + scheduleId
+      rootUrl + "/deleteScheduleReply/" + replyId
     );
     return response.data;
   }

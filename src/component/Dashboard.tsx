@@ -34,6 +34,7 @@ import Typography from "@mui/material/Typography";
 
 import LoginIcon from "@mui/icons-material/Login";
 import LogoutIcon from '@mui/icons-material/Logout';
+import SendIcon from '@mui/icons-material/Send';
 import * as React from "react";
 
 import { Calendar, momentLocalizer } from "react-big-calendar";
@@ -125,6 +126,7 @@ function DashboardContent() {
   const [startDate, setStartDate] = React.useState("");
   const [thumbnail, setThumbnail] = React.useState("");
   const [imageSrc, setImageSrc] = React.useState('');
+  const [replyValue, setReplyValue] = React.useState("");
 
   const [user, setUser] = React.useState<Member>({
     id: 0,
@@ -171,7 +173,7 @@ function DashboardContent() {
     setId(event.id);
     setMembers(event.members);
     setUser(event.user);
-    setScheduleReplies(event.scheduleReplies);
+    setScheduleReplies(event.scheduleReplies); // getScheduleReply로 변경
     handleEditOpen();
   }, []);
 
@@ -305,15 +307,6 @@ function DashboardContent() {
         handleEditClose();
       })
       .catch((error) => alert(error));
-
-    replyRepository.storeScheduleReply({
-      schedule: data.get("id"),
-      description: "테스트댓글",
-
-    }).then((response) => {
-      console.log('reply_RESPONSE', response);
-    })
-      .catch((error) => alert(error));
   };
 
   const handleDeleteClick = (id: number) => {
@@ -384,8 +377,8 @@ function DashboardContent() {
                 {myEventList
                   .filter(
                     (event) =>
-                      newFunction(event.startDate) >= 0 ||
-                      newFunction(event.endDate) >= 0
+                      dateDiff(event.startDate) >= 0 ||
+                      dateDiff(event.endDate) >= 0
                   )
                   .map((result: any, index) => (
                     <Card sx={{ maxWidth: 345 }} key={index}>
@@ -711,6 +704,29 @@ function DashboardContent() {
                       rows={10}
                     />
                     <Box>
+                    <TextField
+                      margin="normal"
+                      fullWidth
+                      id="scheduleReplies"
+                      label="댓글"
+                      name="scheduleReplies"
+                      autoComplete="scheduleReplies"
+                      variant="standard"
+                      onChange={(e) => setReplyValue(e.target.value)}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <Button
+                              variant="contained"
+                              onClick={(() => replyAdd())}
+                              endIcon={<SendIcon />}
+                            >
+                              Send
+                            </Button>
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
                       <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
                         {scheduleReplies.map((reply, i) => (
                           <ListItem alignItems="flex-start" key={i}>
@@ -729,6 +745,11 @@ function DashboardContent() {
                                   >
                                     {reply.user.nickname}
                                   </Typography>
+                                  {
+                          <IconButton edge="end" aria-label="delete" onClick={() => deleteReply(reply)}>
+                            <DeleteIcon />
+                          </IconButton>
+                        }
                                 </React.Fragment>
                               }
                             />
@@ -737,49 +758,7 @@ function DashboardContent() {
                         ))}
 
                       </List>
-
-                      {/* {members.map((member, i) => (
-                      <ListItem
-                        secondaryAction={
-                          <IconButton edge="end" aria-label="delete">
-                            <DeleteIcon />
-                          </IconButton>
-                        }
-                        key={i}
-                      >
-                        <ListItemAvatar>
-                          <Avatar
-                            sx={{ width: 30, height: 30 }}
-                            src={member.picture}
-                          />
-                        </ListItemAvatar>
-                        <ListItemText
-                          primary={member.nickname ? member.nickname: "test2"}
-                        />
-                      </ListItem>
-                    ))} */}
                     </Box>
-                    {/* <TextField
-                      margin="normal"
-                      fullWidth
-                      id="scheduleReplies"
-                      label="댓글"
-                      name="scheduleReplies"
-                      autoComplete="scheduleReplies"
-                      InputProps={{
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <Button
-                              variant="contained"
-                              onClick={() => console.log("send")}
-                              endIcon={<SendIcon />}
-                            >
-                              Send
-                            </Button>
-                          </InputAdornment>
-                        ),
-                      }}
-                    /> */}
                   </Grid>
                   <Grid item xs={4}>
                     <TextField
@@ -953,9 +932,29 @@ function DashboardContent() {
       </ThemeProvider>
     </LocalizationProvider>
   );
+
+  function deleteReply(reply: Replies): void {
+    replyRepository.deleteScheduleReply(reply.id).then((response) => console.log(response)).catch((error) => alert(error));
+    // return console.log(reply.id);
+  }
+
+  function replyAdd(): void {
+    replyRepository.storeScheduleReply({
+      schedule: id,
+      description: replyValue
+
+    }).then((response) => {
+      console.log('reply_RESPONSE', response);
+  // replyRepository.getMyScheduleReplies().then((response) => { });
+  replyRepository.getScheduleReplies(id).then((response) => {console.log(response)})
+  .catch((error) => alert(error));
+
+    })
+      .catch((error) => alert(error));
+  }
 }
 
-function newFunction(event: any) {
+function dateDiff(event: any) {
   return moment(event).diff(moment().format("YYYY-MM-DD"), "days");
 }
 
