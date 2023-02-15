@@ -173,10 +173,17 @@ function DashboardContent() {
     setId(event.id);
     setMembers(event.members);
     setUser(event.user);
-    setScheduleReplies(event.scheduleReplies); // getScheduleReply로 변경
+    getScheduleReplies(event.id);
+    // setScheduleReplies(event.scheduleReplies); // getScheduleReply로 변경
     handleEditOpen();
   }, []);
 
+  const getScheduleReplies = (id: number) => {
+    replyRepository.getScheduleReplies(id).then((response) => {
+      console.log(response)
+      setScheduleReplies(response)
+    })
+  }
   const handleSelectSlot = React.useCallback(
     ({ start, end }: any) => {
       handleAddOpen();
@@ -704,29 +711,29 @@ function DashboardContent() {
                       rows={10}
                     />
                     <Box>
-                    <TextField
-                      margin="normal"
-                      fullWidth
-                      id="scheduleReplies"
-                      label="댓글"
-                      name="scheduleReplies"
-                      autoComplete="scheduleReplies"
-                      variant="standard"
-                      onChange={(e) => setReplyValue(e.target.value)}
-                      InputProps={{
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <Button
-                              variant="contained"
-                              onClick={(() => replyAdd())}
-                              endIcon={<SendIcon />}
-                            >
-                              Send
-                            </Button>
-                          </InputAdornment>
-                        ),
-                      }}
-                    />
+                      <TextField
+                        margin="normal"
+                        fullWidth
+                        id="scheduleReplies"
+                        label="댓글"
+                        name="scheduleReplies"
+                        autoComplete="scheduleReplies"
+                        variant="standard"
+                        onChange={(e) => setReplyValue(e.target.value)}
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <Button
+                                variant="contained"
+                                onClick={(() => addReply())}
+                                endIcon={<SendIcon />}
+                              >
+                                Send
+                              </Button>
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
                       <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
                         {scheduleReplies.map((reply, i) => (
                           <ListItem alignItems="flex-start" key={i}>
@@ -746,10 +753,10 @@ function DashboardContent() {
                                     {reply.user.nickname}
                                   </Typography>
                                   {
-                          <IconButton edge="end" aria-label="delete" onClick={() => deleteReply(reply)}>
-                            <DeleteIcon />
-                          </IconButton>
-                        }
+                                    <IconButton edge="end" aria-label="delete" onClick={() => deleteReply(reply)}>
+                                      <DeleteIcon />
+                                    </IconButton>
+                                  }
                                 </React.Fragment>
                               }
                             />
@@ -936,21 +943,25 @@ function DashboardContent() {
   function deleteReply(reply: Replies): void {
     replyRepository.deleteScheduleReply(reply.id).then((response) => console.log(response)).catch((error) => alert(error));
     // return console.log(reply.id);
+    // getScheduleReplies(reply.id)
   }
 
-  function replyAdd(): void {
+  function addReply(): void {
     replyRepository.storeScheduleReply({
       schedule: id,
       description: replyValue
 
     }).then((response) => {
       console.log('reply_RESPONSE', response);
-  // replyRepository.getMyScheduleReplies().then((response) => { });
-  replyRepository.getScheduleReplies(id).then((response) => {console.log(response)})
-  .catch((error) => alert(error));
-
+      // replyRepository.getMyScheduleReplies().then((response) => { });
+      replyRepository.getScheduleReplies(id).then((response) => {
+        console.log(response)
+        setScheduleReplies(response)
+      })
+        .catch((error) => alert(error));
     })
       .catch((error) => alert(error));
+    getScheduleReplies(id)
   }
 }
 
