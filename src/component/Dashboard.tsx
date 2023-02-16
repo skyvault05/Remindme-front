@@ -33,8 +33,8 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 
 import LoginIcon from "@mui/icons-material/Login";
-import LogoutIcon from '@mui/icons-material/Logout';
-import SendIcon from '@mui/icons-material/Send';
+import LogoutIcon from "@mui/icons-material/Logout";
+import SendIcon from "@mui/icons-material/Send";
 import * as React from "react";
 
 import { Calendar, momentLocalizer } from "react-big-calendar";
@@ -43,11 +43,11 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 import moment from "moment";
 import "moment/locale/ko";
 
+import { customAxios } from "../lib/customAxios";
 import ScheduleMapper from "../mapper/ScheduleMapper";
 import ReplyRepository from "../repository/ReplyRepository";
 import ScheduleRepository from "../repository/ScheduleRepository";
 import UserRepository from "../repository/UserRepository";
-import { customAxios } from "../lib/customAxios";
 
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
@@ -125,7 +125,7 @@ function DashboardContent() {
   const [start, setStart] = React.useState("");
   const [startDate, setStartDate] = React.useState("");
   const [thumbnail, setThumbnail] = React.useState("");
-  const [imageSrc, setImageSrc] = React.useState('');
+  const [imageSrc, setImageSrc] = React.useState("");
   const [replyValue, setReplyValue] = React.useState("");
 
   const [user, setUser] = React.useState<Member>({
@@ -140,8 +140,8 @@ function DashboardContent() {
   const handleAddOpen = () => setAddOpen(true);
   const handleAddClose = () => {
     setAddOpen(false);
-    setImageSrc('')
-  }
+    setImageSrc("");
+  };
   const handleEditOpen = () => setEditOpen(true);
   const handleEditClose = () => setEditOpen(false);
   const handleBackdropClose = () => setBackdropOpen(false);
@@ -180,10 +180,9 @@ function DashboardContent() {
 
   const getScheduleReplies = (id: number) => {
     replyRepository.getScheduleReplies(id).then((response) => {
-      console.log(response)
-      setScheduleReplies(response)
-    })
-  }
+      setScheduleReplies(response);
+    });
+  };
   const handleSelectSlot = React.useCallback(
     ({ start, end }: any) => {
       handleAddOpen();
@@ -196,7 +195,6 @@ function DashboardContent() {
   const getEventLoading = () => {
     handleBackdropToggle();
     scheduleRepository.getMySchedules().then((response) => {
-      console.log('response', response)
       scheduleMapper
         .toCalendarSchedule(response)
         .then((eventList) => {
@@ -205,7 +203,7 @@ function DashboardContent() {
         })
         .catch((error) => alert(error));
     });
-    replyRepository.getMyScheduleReplies().then((response) => { });
+    replyRepository.getMyScheduleReplies().then((response) => {});
   };
 
   const checkLogin = () => {
@@ -296,6 +294,8 @@ function DashboardContent() {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
 
+    console.log("data", data);
+
     scheduleRepository
       .storeSchedule({
         id: data.get("id"),
@@ -327,26 +327,29 @@ function DashboardContent() {
       .catch((error) => alert(error));
   };
 
-  const loginButton = <Button
-    variant="contained"
-    href="http://localhost:8080/oauth2/authorization/google?redirect_uri=http://localhost:3000/oauth2/redirect"
-    endIcon={<LoginIcon />}
-    color="error"
-  >
-    Login
-  </Button>;
+  const loginButton = (
+    <Button
+      variant="contained"
+      href="http://ec2-54-238-154-254.ap-northeast-1.compute.amazonaws.com:8080/oauth2/authorization/google?redirect_uri=http://ec2-18-183-67-247.ap-northeast-1.compute.amazonaws.com:3000/oauth2/redirect"
+      endIcon={<LoginIcon />}
+      color="error"
+    >
+      Login
+    </Button>
+  );
 
-  const logoutButton = <Button
-    variant="contained"
-    onClick={() => console.log('logout')}
-    endIcon={<LogoutIcon />}
-    color="error"
-  >
-    Logout
-  </Button>;
+  const logoutButton = (
+    <Button
+      variant="contained"
+      onClick={() => console.log("logout")}
+      endIcon={<LogoutIcon />}
+      color="error"
+    >
+      Logout
+    </Button>
+  );
   return (
     <LocalizationProvider dateAdapter={AdapterMoment}>
-
       <ThemeProvider theme={mdTheme}>
         <Box sx={{ display: "flex" }}>
           <CssBaseline />
@@ -429,7 +432,9 @@ function DashboardContent() {
             <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
               <Grid container spacing={1.5}>
                 <Grid item xs={12}>
-                  <Paper sx={{ p: 2, display: "flex", flexDirection: "column" }}>
+                  <Paper
+                    sx={{ p: 2, display: "flex", flexDirection: "column" }}
+                  >
                     <Calendar
                       localizer={localizer}
                       events={myEventList}
@@ -620,7 +625,11 @@ function DashboardContent() {
                     >
                       등록
                     </Button>
-                    <Button type="reset" variant="outlined" sx={{ mt: 3, mb: 2 }}>
+                    <Button
+                      type="reset"
+                      variant="outlined"
+                      sx={{ mt: 3, mb: 2 }}
+                    >
                       취소
                     </Button>
                   </Grid>
@@ -725,7 +734,7 @@ function DashboardContent() {
                             <InputAdornment position="end">
                               <Button
                                 variant="contained"
-                                onClick={(() => addReply())}
+                                onClick={() => addReply()}
                                 endIcon={<SendIcon />}
                               >
                                 Send
@@ -734,18 +743,27 @@ function DashboardContent() {
                           ),
                         }}
                       />
-                      <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
+                      <List
+                        sx={{
+                          width: "100%",
+                          maxWidth: 360,
+                          bgcolor: "background.paper",
+                        }}
+                      >
                         {scheduleReplies.map((reply, i) => (
                           <ListItem alignItems="flex-start" key={i}>
                             <ListItemAvatar>
-                              <Avatar alt={reply.user.nickname} src={reply.user.picture} />
+                              <Avatar
+                                alt={reply.user.nickname}
+                                src={reply.user.picture}
+                              />
                             </ListItemAvatar>
                             <ListItemText
                               primary={reply.description}
                               secondary={
                                 <React.Fragment>
                                   <Typography
-                                    sx={{ display: 'inline' }}
+                                    sx={{ display: "inline" }}
                                     component="span"
                                     variant="body2"
                                     color="text.primary"
@@ -753,7 +771,11 @@ function DashboardContent() {
                                     {reply.user.nickname}
                                   </Typography>
                                   {
-                                    <IconButton edge="end" aria-label="delete" onClick={() => deleteReply(reply)}>
+                                    <IconButton
+                                      edge="end"
+                                      aria-label="delete"
+                                      onClick={() => deleteReply(reply)}
+                                    >
                                       <DeleteIcon />
                                     </IconButton>
                                   }
@@ -761,9 +783,7 @@ function DashboardContent() {
                               }
                             />
                           </ListItem>
-
                         ))}
-
                       </List>
                     </Box>
                   </Grid>
@@ -883,7 +903,9 @@ function DashboardContent() {
                           />
                         </ListItemAvatar>
                         <ListItemText
-                          primary={member.nickname ? member.nickname : "unknown"}
+                          primary={
+                            member.nickname ? member.nickname : "unknown"
+                          }
                         />
                       </ListItem>
                     ))}
@@ -927,7 +949,11 @@ function DashboardContent() {
                     >
                       삭제
                     </Button>
-                    <Button type="reset" variant="outlined" sx={{ mt: 3, mb: 2 }}>
+                    <Button
+                      type="reset"
+                      variant="outlined"
+                      sx={{ mt: 3, mb: 2 }}
+                    >
                       취소
                     </Button>
                   </Grid>
@@ -941,27 +967,33 @@ function DashboardContent() {
   );
 
   function deleteReply(reply: Replies): void {
-    replyRepository.deleteScheduleReply(reply.id).then((response) => console.log(response)).catch((error) => alert(error));
+    replyRepository
+      .deleteScheduleReply(reply.id)
+      .then((response) => console.log(response))
+      .catch((error) => alert(error));
     // return console.log(reply.id);
     // getScheduleReplies(reply.id)
   }
 
   function addReply(): void {
-    replyRepository.storeScheduleReply({
-      schedule: id,
-      description: replyValue
-
-    }).then((response) => {
-      console.log('reply_RESPONSE', response);
-      // replyRepository.getMyScheduleReplies().then((response) => { });
-      replyRepository.getScheduleReplies(id).then((response) => {
-        console.log(response)
-        setScheduleReplies(response)
+    replyRepository
+      .storeScheduleReply({
+        schedule: id,
+        description: replyValue,
       })
-        .catch((error) => alert(error));
-    })
+      .then((response) => {
+        console.log("reply_RESPONSE", response);
+        // replyRepository.getMyScheduleReplies().then((response) => { });
+        replyRepository
+          .getScheduleReplies(id)
+          .then((response) => {
+            console.log(response);
+            setScheduleReplies(response);
+          })
+          .catch((error) => alert(error));
+      })
       .catch((error) => alert(error));
-    getScheduleReplies(id)
+    getScheduleReplies(id);
   }
 }
 

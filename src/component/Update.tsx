@@ -170,7 +170,7 @@ export function UpdateModal(
                   required
                   fullWidth
                   id="intervalValue"
-                  label="반복횟수"
+                  label="반복간격"
                   name="intervalValue"
                   autoComplete="intervalValue"
                   defaultValue={intervalValue}

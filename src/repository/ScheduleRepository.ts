@@ -1,4 +1,3 @@
-import axios from "axios";
 import { customAxios } from "../lib/customAxios";
 
 const rootUrl = "/api/v1/schedule";
@@ -15,12 +14,16 @@ export default class ScheduleRepository {
   }
 
   async getSchedule(scheduleId: number) {
-    let response = await customAxios.get(rootUrl + "/getSchedule/" + scheduleId);
+    let response = await customAxios.get(
+      rootUrl + "/getSchedule/" + scheduleId
+    );
     return response.data;
   }
 
   async storeSchedule(data: any) {
     let response = await customAxios.post(rootUrl + "/storeSchedule", data);
+
+    console.log("axios_data", data);
     return response.data;
   }
 
