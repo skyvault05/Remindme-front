@@ -56,19 +56,22 @@ const localizer = momentLocalizer(moment);
 
 const Copyright = (props: any) => {
   return (
-    <Typography
-      variant="body2"
-      color="text.secondary"
-      align="center"
-      {...props}
-    >
-      {"Copyright © "}
-      <Link color="inherit" href="">
-        RemindMe
-      </Link>{" "}
-      {new Date().getFullYear()}
-      {"."}
-    </Typography>
+    <>
+      <Typography
+        variant="body2"
+        color="text.secondary"
+        align="center"
+        {...props}
+      >
+        {"Copyright © "}
+        <Link color="inherit" href="">
+          RemindMe
+        </Link>{" "}
+        {new Date().getFullYear()}
+        {"."}
+      </Typography>
+      <Typography variant="button">테스트 계정: RemindmeTestAcc@gmail.com // remindmeacc</Typography>
+    </>
   );
 };
 
@@ -203,12 +206,15 @@ function DashboardContent() {
         })
         .catch((error) => alert(error));
     });
-    replyRepository.getMyScheduleReplies().then((response) => {});
+    replyRepository.getMyScheduleReplies().then(() => { });
   };
 
   const checkLogin = () => {
     userRepository.getMyInfo().then((response) => {
       console.log("checkLogin", response);
+    }).catch((error) => {
+      alert("테스트 계정으로 로그인 부탁드립니다.")
+      handleBackdropClose();
     });
   };
 
@@ -236,7 +242,7 @@ function DashboardContent() {
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const handleButtonClick = (event: any) => {
+  const handleButtonClick = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
@@ -338,16 +344,6 @@ function DashboardContent() {
     </Button>
   );
 
-  const logoutButton = (
-    <Button
-      variant="contained"
-      onClick={() => console.log("logout")}
-      endIcon={<LogoutIcon />}
-      color="error"
-    >
-      Logout
-    </Button>
-  );
   return (
     <LocalizationProvider dateAdapter={AdapterMoment}>
       <ThemeProvider theme={mdTheme}>
